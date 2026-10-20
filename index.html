@@ -2027,6 +2027,49 @@
     <!-- 접속 5초 후 알림창 -->
     <script>
     (function () {
+        /* ---- 알림음 설정 ---- */
+        const SOUND_SRC = './img/message.mp3';
+        const SOUND_VOLUME = 1.3; /* 알림소리 크기 */
+
+        /* 아이폰 Safari는 audio.volume이 무시되므로 Web Audio(GainNode)로 볼륨 조절 */
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+        let gainNode = null;
+        let soundBuffer = null;
+
+        try {
+            if (AudioCtx) {
+                audioCtx = new AudioCtx();
+                gainNode = audioCtx.createGain();
+                gainNode.gain.value = SOUND_VOLUME;
+                gainNode.connect(audioCtx.destination);
+
+                fetch(SOUND_SRC)
+                    .then(res => res.arrayBuffer())
+                    .then(data => new Promise((resolve, reject) => audioCtx.decodeAudioData(data, resolve, reject)))
+                    .then(buffer => { soundBuffer = buffer; })
+                    .catch(() => {});
+            }
+        } catch (err) {}
+
+        /* 브라우저 정책상 첫 터치/클릭 이후부터 소리 재생 가능 */
+        function unlockSound() {
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        }
+        ['touchstart', 'pointerdown', 'click', 'keydown'].forEach(evt => {
+            document.addEventListener(evt, unlockSound, { passive: true });
+        });
+
+        function playNotificationSound() {
+            if (!audioCtx || !gainNode || !soundBuffer) return;
+            if (audioCtx.state !== 'running') return;
+            const source = audioCtx.createBufferSource();
+            source.buffer = soundBuffer;
+            source.connect(gainNode);
+            source.start(0);
+        }
+
+        /* ---- 알림창 ---- */
         let notificationShown = false;
 
         function showMessageNotification() {
@@ -2038,6 +2081,7 @@
 
             setTimeout(() => {
                 notification.classList.add('show');
+                playNotificationSound();
 
                 // 시간 지정
                 setTimeout(() => {
