@@ -1026,9 +1026,122 @@
         .sr-tb em{font-style:normal;font-size:12px;padding:2px 6px;border-radius:4px}
         .sr-tb .f{background:#fdecea;color:#d93025}
         .sr-tb .o{background:#e8f4ec;color:#1a7a3c}
+
+        /* ===================================================================
+           홈화면 알림창 (문자)
+        ===================================================================  */
+        .message-notification {
+            position: fixed;
+            top: 40px;
+            left: 12px;
+            right: 12px;
+            max-width: 376px;
+            margin: 0 auto;
+            z-index: 10000;
+
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            padding: 12px;
+            border-radius: 20px;
+            border: #eeeeee;
+            background: rgba(255, 255, 255, 0.96);
+            color: #1c1c1e;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-150%);
+            pointer-events: none;
+        }
+
+        .message-notification.show {
+            visibility: visible;
+            animation: notificationDrop 0.45s ease-out forwards;
+            pointer-events: auto;
+        }
+
+        .message-notification.hide {
+            animation: notificationHide 0.35s ease-in forwards;
+        }
+
+        .message-notification img {
+            width: 42px;
+            height: 42px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .message-notification-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .message-notification-sender {
+            margin-bottom: 2px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .message-notification-time {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 11px;
+            color: #8e8e93;
+            font-weight: 400;
+        }
+
+        .message-notification-body {
+            overflow: hidden;
+            font-size: 13px;
+            color: #3a3a3c;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        @keyframes notificationDrop {
+            from {
+                opacity: 0;
+                transform: translateY(-150%);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes notificationHide {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-150%);
+            }
+        }
     </style>
 </head>
 <body>
+
+    <!-- 문자 메시지 알림창 -->
+    <div class="message-notification" id="messageNotification">
+        <span class="message-notification-time">지금</span>
+
+        <img src="./img/profile/mudo2.png" alt="프로필 이미지">
+
+        <div class="message-notification-content">
+            <div class="message-notification-sender">무도</div>
+            <div class="message-notification-body">
+                맥주 2+1 하는데. 어제 다 먹었지?
+            </div>
+        </div>
+    </div>
 
     <div id="mainContentArea">
 
@@ -1151,7 +1264,7 @@
                     <i class="fa-solid fa-bag-shopping"></i>
                     <span>쇼핑</span>
                 </a>
-                <a href="#" class="nav-item active">
+                <a href="#" class="nav-item active" onclick="clearCacheAndReload(event)">
                     <i class="fa-solid fa-house" onclick="location.reload();"></i>
                     <span>홈</span>
                 </a>
@@ -1892,6 +2005,54 @@
         });
         view.addEventListener('click', e => { if (e.target.closest('[data-close]')) view.classList.remove('on'); });
         document.addEventListener('click', () => hist.classList.remove('on'));
+    })();
+
+    function clearCacheAndReload(e) {
+        if (e) e.preventDefault();
+
+        // 캐시 삭제
+        if ('caches' in window) {
+            caches.keys().then(function(names) {
+                names.forEach(function(name) {
+                    caches.delete(name);
+                });
+            });
+        }
+
+        // 삭제 후 새로고침
+        location.href = location.pathname + '?t=' + Date.now();
+    }
+    </script>
+
+    <!-- 접속 5초 후 알림창 -->
+    <script>
+    (function () {
+        let notificationShown = false;
+
+        function showMessageNotification() {
+            if (notificationShown) return;
+            notificationShown = true;
+
+            const notification = document.getElementById('messageNotification');
+            if (!notification) return;
+
+            setTimeout(() => {
+                notification.classList.add('show');
+
+                // 시간 지정
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    notification.classList.add('hide');
+
+                    // 애니메이션 종료 후 화면에서 제거
+                    setTimeout(() => {
+                        notification.classList.remove('hide');
+                    }, 350);
+                }, 5000);
+            }, 5000); /* 접속 후 5초 */
+        }
+
+        showMessageNotification();
     })();
     </script>
 </body>
