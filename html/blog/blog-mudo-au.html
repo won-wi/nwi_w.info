@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>무도 x 가윤</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="../../prevent.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Noto Sans KR', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            height: 100%;
+            background: #fff;
+            color: #111;
+        }
+
+        button {
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: inherit;
+        }
+
+        .page {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 400px;
+            height: 100%;
+            margin: 0 auto;
+            padding-bottom: 40px;
+        }
+
+        .bar {
+            flex: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 52px;
+            padding: 0 16px;
+            border-bottom: 1px solid #eee;
+            font-size: 17px;
+        }
+
+        .bar-title {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .scroll {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+
+        .scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .post {
+            padding: 24px 20px 40px;
+        }
+
+        .post-title {
+            font-size: 22px;
+            font-weight: 700;
+            line-height: 1.4;
+            letter-spacing: -0.4px;
+        }
+
+        .author {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 18px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .author-avatar {
+            width: 36px;
+            height: 36px;
+            overflow: hidden;
+            border-radius: 50%;
+            background: #ddd;
+        }
+
+        .author-avatar img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .author-name {
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .author-date {
+            margin-top: 1px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .body {
+            margin-top: 20px;
+        }
+
+        .body p {
+            margin-bottom: 20px;
+            font-size: 15px;
+            line-height: 1.8;
+            color: #222;
+            word-break: keep-all;
+        }
+
+        .img-box {
+            min-height: 240px;
+            margin: 0 -20px 20px;
+            background: #c2c2c2;
+        }
+
+        .img-box img {
+            display: block;
+            width: 100%;
+        }
+
+        .reactions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding-top: 16px;
+            border-top: 1px solid #eee;
+            font-size: 13px;
+            color: #888;
+        }
+
+        .reactions i {
+            margin-left: 8px;
+            font-size: 17px;
+        }
+
+        .reactions i:first-child {
+            margin-left: 0;
+        }
+
+        /* ===================================================================
+            하단 브라우저 바 (N 로고만 기능, 나머지는 디자인 요소)
+        ===================================================================  */
+        .browser-bar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            max-width: 430px;
+            margin: 0 auto;
+            height: 60px;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            align-items: start;
+            padding: 0 3px;
+            background: #ffffff;
+            border-top: 0.67px solid #d9d9d9;
+            z-index: 15;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .browser-btn {
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2e2e2e;
+        }
+
+        .browser-btn svg {
+            display: block;
+            overflow: visible;
+        }
+
+        .browser-btn.disabled {
+            color: #cccccc;
+        }
+
+        .browser-home {
+            cursor: pointer;
+        }
+
+        /* ===================================================================
+            장르 태그 / 소제목 / 하이라이트 / 안내 문구
+        ===================================================================  */
+        .genre-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 14px;
+        }
+
+        .genre-tags span {
+            padding: 4px 10px;
+            border-radius: 14px;
+            background: #f2f4f6;
+            font-size: 12px;
+            color: #555;
+        }
+
+        .genre-tags span::before {
+            content: '#';
+            margin-right: 1px;
+            color: #03c75a;
+        }
+
+        .body h2 {
+            margin: 32px 0 12px;
+            font-size: 17px;
+            font-weight: 700;
+            line-height: 1.4;
+            letter-spacing: -0.3px;
+            color: #111;
+        }
+
+        .body h2:first-child {
+            margin-top: 0;
+        }
+
+        .highlight {
+            background: linear-gradient(
+                transparent 5%,
+                #007aff42 5%,
+                #007aff42 95%,
+                transparent 95%
+            );
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+
+    <header class="bar">
+        <button onclick="goBack()" aria-label="뒤로가기"><i class="fa-solid fa-chevron-left"></i></button>
+        <span class="bar-title">wwi</span>
+        <i class="fa-solid fa-ellipsis-vertical"></i>
+    </header>
+
+    <div class="scroll">
+        <article class="post">
+            <h1 class="post-title">기본 설정방</h1>
+
+            <div class="genre-tags">
+                <span>케덕</span>
+                <span>온리 반이입</span>
+                <span>후회물</span>
+                <span>au. 과거트립</span>
+            </div>
+
+            <div class="author">
+                <div class="author-avatar"><img src="../../img/profile.png" alt=""></div>
+                <div>
+                    <div class="author-name">wwi</div>
+                    <div class="author-date">2일 전</div>
+                </div>
+            </div>
+
+            <div class="body">
+                <div class="img-box"><img src="./mudo2.png" alt=""></div>
+
+                <h2>au. 과거트립</h2>
+                <p>지희와의 7년의 결혼생활이 시작되었는 그 시발점의 날.<br>
+                <span class="highlight">지희의 집이 아닌 옆집의 여자를 선택하는 그 순간.</span></p>
+
+                <h2>로그 요약1</h2>
+                <p>
+                    여느 때와 같은 빌어먹을 안방의 천장이 마지막 시야였다. 옆에 있는 이를 무시한 채로 잠에
+                    들었고 눈을 떴을 때는 청담동 집의 푹신한 침대와 포근한 이불이 아니라 축축한 골목의 공기,
+                    싸늘한 저녁밤의 기온, 그리고 옆구리의 찢어진 통증이었다.</span> 이었고 남편에게 아내가 들이민
+                    건 불륜녀의 목소리와 온기였다. 그 위에 덧붙인 말은 사과나 변명이 아닌 미처 닫지 못한 현관문을
+                    닫으라는 단 한 마디였다.
+                </p>
+                <p>
+                    나란히 있는 두 개의 주택이 마치 홀짝 게임 같았다.
+                    한쪽은 주인의 생김새도, 성격도, 함께 만들어갈 미래마저 뻔했다.
+                    <span class="highlight">그 미래 위에 피어난 꽃 한송이나 우거진 가시덤불들의
+                    색마저 뻔했다.</span> 그 날 무도가 선택한 건 알 수 없는 미래였다.
+                </p>
+
+                <h2>로그 요약2</h2>
+                <p>
+                    눈을 떴을 때 느껴진 건 어깨를 쿡쿡 지르는 구두주걱. 그리고 엉성하게 옆구리를 꽉 조이기만 한
+                    피투성이 붕대들 뿐이었다. 지희와의 이튿날은 달랐다.
+                    <span class="highlight">조심스럽게 살금살금 다가오는 구원이
+                    시야에 꽉 들어차서 제 본성을 숨기고 다가가기 급급했다.</span> 저 미친 구두주걱이 아니라.
+                </p>
+                <p>
+                    괜찮냐는 떨리는 물음과 안절부절하며 곁을 맴도는 온기가 아니었다. 구두주걱을 휘두르며
+                    정신 차렸으면 나가라는 말에 물 안 주면 눌러앉겠다는 헛소리나 나왔다. 하나 확실한 건
+                    이 곳에서 지금은 본성을 숨길 필요가 없었다.
+                    옆집의 여자를 선택하고 펼쳐진 첫번째 미래부터가 장관이었다.
+                </p>
+
+                <h2>로그 요약3</h2>
+                <p>
+                    숙성시킨 와인이 아니라 편의점에서 파는 2+1 맥주캔을 뜯었다.
+                    <span class="highlight">한 캔을 다 비우면
+                    냉장고에 다녀오기 귀찮아서 상대의 맥주캔을 나눠마신 후</span> 느긋하게
+                    몸을 일으켜서 부엌 냉장고에 넣어둔 시원한 맥주캔을 새로 가져왔다.
+                    편의점에서 파는 오징어 다리를 뜯으면서 TV에서 흘러나오는 예능 속 게임에
+                    저마다 한마디씩 얹으며 커다란 오징어 몸통을 나눠먹었다.
+                </p>
+                <p>
+                    비싼 레스토랑을 예약하지 않았고 명품이 담긴 쇼핑백들을 들고 오지도 않았다.
+                    추운 가을 저녁에 마을 골목 어귀에 있는 붕어빵 트럭에서 줄을 서서 흰 봉투를
+                    품에 안고 <span class="highlight">혹여나 식을까 빠른 걸음으로 뛰다시피 달려왔다.</span>
+                    구겨진 봉투를 식탁에
+                    놓아두고 오다 주웠다는 양 먹이면서 손목을 살짝 이끌어 은근슬쩍 품에
+                    안고 손을 잡았다.
+                </p>
+                <p>
+                    툴툴대며 밀어낸 후 바닥에 앉아서 소파 다리에 등을 기대는 걸 보면서
+                    무도는 실실 웃다가 그녀의 머리카락만 매만졌다.
+                    <span class="highlight">무릎으로 그녀의 양쪽 어깨를 가로막고
+                    오늘 저녁은 어떤 메뉴를 먹을지 이야기하는 게 새로운 일상이자 그가 선택한 미래였다.</span>
+                    손을 잡으면서 그럴싸한 말을 건네면 툴툴대며 정작 손을 뿌리쳐주지 않는 게 좋았다.
+                </p>
+
+                <h2>로그 요약4</h2>
+                <p>
+                    <span class="highlight">
+                        무겁고 숨막히는 구원이 아니라 가볍게 차곡차곡 빈틈없이 채워지는 이 관계가 압도적이었다.
+                    </span>
+                    옆집의 불이 켜지는 건 아무런 신경이 쓰이지 않았다. 과거로 돌아온 그가 선택한 것이었고
+                    그 선택이 만들어준 현실은 빌어먹게도 사랑스러웠다.
+                </p>
+                <p>
+                    이 현실을 과거와 마주치게 하고 싶지 않았다.
+                    <span class="highlight">제 과거가 이 현실을 집어삼키게 둘 수가 없었다.</span>
+                    과거의 그 비참했던 질타와 비난들이 현실에 발끝 하나라도 걸쳤다가는 이번에도 지키지 못할까 봐
+                    두려웠다. 그 만남을 애원하며 겨우 막아낸
+                    <span class="highlight">그의 안도감은 또 한 겹의 애정이 되었다.</span>
+                </p>
+
+                <h2>로그 요약5</h2>
+                <p>
+                    퇴근길에 들렀던 무도는 다시 청담동 집으로 돌아갔다. 그게 맞았다. 퇴근길에
+                    편의점 맥주와 디저트를 사왔을지언정 그는 아직 그녀의 집에서 제자리를 갖지 못했었다.
+                </p>
+                <p>
+                    작은 2인용 소파에 누우면 다리는 다 튀어나오고 허리는 끊어질 것 같았다.
+                    그런 곳에서 TV를 보다가 함께 잠이 들었고 얇은 담요를 가윤에게 전부 둘러놓은 무도는
+                    그런 가윤을 이불 대신 품에 안고 잠들었다.
+                </p>
+                <p>
+                    처음에는 <span class="highlight">하얀색 전기히터</span>가 거실 한켠에 당당하게 놓였고
+                    그 후에는 <span class="highlight">검은색 칫솔</span>이 양치컵에 나란히 꽂혔다.
+                    그 다음에는 <span class="highlight">남색 수건</span>이 함께 빨랫줄에 널려있다가
+                    욕실 상부장으로 들어갔다.
+                    그 다음에는 무도가 잘 때 입을 <span class="highlight">검은색 티셔츠</span>가
+                    세탁기 속에 함께 돌아가기 시작했고
+                    <span class="highlight">면도기와 남성용 스킨로션</span>이 화장실 세면대 위에서
+                    여자의 것 옆에 나란히 자리를 잡았다.
+                </p>
+                <p>
+                    무도는 청담동으로 돌아가고 싶지 않았다. 이 여자가 있는 집에 그저 제 살림을
+                    야금야금 들여놓고 출퇴근을 하며 살 생각이었다.
+                    추워지는 날씨를 들먹이자 무도의 겨울 잠옷과 평상복이 가윤의 옷장 절반과 서랍 하나를
+                    차지하게 되었다.
+                    <span class="highlight">
+                        허락해주면 기꺼이 들어가고 허락하지 않으면
+                        비집고 들어가겠다
+                    </span>
+                    는 무도의 말이 침대를 쟁취했다.
+                </p>
+            </div>
+
+            <div class="reactions">
+                <i class="fa-regular fa-heart"></i><span>122</span>
+                <i class="fa-regular fa-comment-dots"></i><span>5</span>
+            </div>
+        </article>
+    </div>
+
+</div>
+
+<!-- 하단 브라우저 바 : N 로고만 index로 이동, 나머지 버튼은 디자인 요소 -->
+<div class="browser-bar">
+    <div id="naverHomeBtn" class="browser-btn browser-home" role="button" aria-label="홈으로">
+        <svg width="23.3" height="23.3" viewBox="0 0 23.3 23.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="1" y="1" width="21.3" height="21.3" rx="4.5"/>
+            <path d="M7.6 15.7V7.7L15.7 15.7V7.7"/>
+        </svg>
+    </div>
+    <div class="browser-btn">
+        <svg width="10.3" height="17.7" viewBox="0 0 10.3 17.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9.3 1L1 8.85L9.3 16.7"/>
+        </svg>
+    </div>
+    <div class="browser-btn disabled">
+        <svg width="10.3" height="17.7" viewBox="0 0 10.3 17.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 1L9.3 8.85L1 16.7"/>
+        </svg>
+    </div>
+    <div class="browser-btn">
+        <svg width="19.6" height="20.5" viewBox="0 0 19.6 20.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9.13" cy="9.3" r="8"/>
+            <path d="M14.8 15.2L18.5 19.4"/>
+        </svg>
+    </div>
+    <div class="browser-btn">
+        <svg width="20" height="19.5" viewBox="0 0 20 19.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18.33 11.93A8.58 8.58 0 1 1 18.4 7.17M18.4 1.67V7.17H13.67"/>
+        </svg>
+    </div>
+    <div class="browser-btn">
+        <svg width="22" height="10" viewBox="0 0 22 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 1H21M1 9H21"/>
+        </svg>
+    </div>
+</div>
+
+<script>
+    function goBack() {
+        if (window.parent !== window) {
+            window.parent.postMessage({ type: 'closeApp' }, '*');
+        } else {
+            history.back();
+        }
+    }
+
+    /* 뒤로 버튼 */
+    document.getElementById("naverHomeBtn").addEventListener("click", function () {
+        // 단독으로 열린 경우: index.html로 이동
+        if (window.parent === window) {
+            location.href = "../../index.html";
+            return;
+        }
+        window.parent.postMessage({ type: "closeAll" }, "*");
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ko">
+<meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>넷플릭스</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Diphylleia&family=Gowun+Dodum&family=Poor+Story&display=swap" rel="stylesheet">
+
+    <script src="../prevent.js"></script>
+    <link rel="stylesheet" href="../../transition.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Gowun Dodum", sans-serif;
+        }
+
+        body {
+            background-color: #141414;
+            color: #ffffff;
+            overflow-x: hidden;
+            overflow-y: auto;
+            height: 100vh;
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* 카테고리 버튼 컨테이너 */
+        .category-nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 20px 0 20px 0;
+            background-color: #050505;
+            
+            /* 스크롤을 내려도 상단에 버튼이 고정되길 원하시면 아래 두 줄 주석 해제 */
+            /* position: sticky; */
+            /* top: 0; */
+            /* z-index: 100; */
+        }
+
+        /* 반투명 버튼 */
+        .category-btn {
+            width: auto;
+            height: 30px;
+            padding: 0px 10px;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        /* 선택된 버튼 스타일 */
+        .category-btn.active {
+            background-color: rgba(255, 255, 255, 0.8);
+            color: #000000;
+            border-color: #ffffff;
+            transform: scale(1.05);
+        }
+
+        .category-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* 이미지 표시 영역 */
+        .image-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 60px;
+        }
+
+        /* 가로 꽉 차는 이미지 */
+        .target-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            
+            opacity: 1;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .target-image.fade {
+            opacity: 0;
+        }
+
+        /* 하단 브라우저 바 (N 로고만 기능, 나머지는 디자인 요소) */
+        .browser-bar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            max-width: 430px;
+            margin: 0 auto;
+            height: 60px;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            align-items: start;
+            padding: 0 3px;
+            background: #ffffff;
+            border-top: 0.67px solid #d9d9d9;
+            z-index: 15;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .browser-btn {
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2e2e2e;
+        }
+
+        .browser-btn svg {
+            display: block;
+            overflow: visible;
+        }
+
+        .browser-btn.disabled {
+            color: #cccccc;
+        }
+
+        .browser-home {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="category-nav">
+        <div class="category-btn active" onclick="changeImage('../img/netflix/1.jpg', this)">
+            나기 x 기요라
+        </div>
+        <div class="category-btn" onclick="changeImage('../img/netflix/2.jpg', this)">
+            블랑 x 제릴
+        </div>
+        <div class="category-btn" onclick="changeImage('../img/netflix/3.jpg', this)">
+            기선우
+        </div>
+    </div>
+
+    <div class="image-container">
+        <!-- 기본 이미지 -->
+        <img src="../img/netflix/1.jpg" alt="content" class="target-image" id="mainImage">
+    </div>
+
+    <!-- 하단 브라우저 바 : N 로고만 index로 이동, 나머지 버튼은 디자인 요소 -->
+    <div class="browser-bar">
+        <div id="naverHomeBtn" class="browser-btn browser-home" role="button" aria-label="홈으로">
+            <svg width="23.3" height="23.3" viewBox="0 0 23.3 23.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="1" y="1" width="21.3" height="21.3" rx="4.5"/>
+                <path d="M7.6 15.7V7.7L15.7 15.7V7.7"/>
+            </svg>
+        </div>
+        <div class="browser-btn">
+            <svg width="10.3" height="17.7" viewBox="0 0 10.3 17.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9.3 1L1 8.85L9.3 16.7"/>
+            </svg>
+        </div>
+        <div class="browser-btn disabled">
+            <svg width="10.3" height="17.7" viewBox="0 0 10.3 17.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 1L9.3 8.85L1 16.7"/>
+            </svg>
+        </div>
+        <div class="browser-btn">
+            <svg width="19.6" height="20.5" viewBox="0 0 19.6 20.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="9.13" cy="9.3" r="8"/>
+                <path d="M14.8 15.2L18.5 19.4"/>
+            </svg>
+        </div>
+        <div class="browser-btn">
+            <svg width="20" height="19.5" viewBox="0 0 20 19.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18.33 11.93A8.58 8.58 0 1 1 18.4 7.17M18.4 1.67V7.17H13.67"/>
+            </svg>
+        </div>
+        <div class="browser-btn">
+            <svg width="22" height="10" viewBox="0 0 22 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 1H21M1 9H21"/>
+            </svg>
+        </div>
+    </div>
+</body>
+
+    <script>
+        function changeImage(src, btn) {
+            const img = document.getElementById('mainImage');
+            const buttons = document.querySelectorAll('.category-btn');
+            
+            buttons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // 이미지가 부드럽게 깜빡이며 바뀌는 효과
+            img.classList.add('fade');
+            setTimeout(() => {
+                img.src = src; // 이미지 경로 교체
+                img.classList.remove('fade');
+            }, 200);
+        }
+    </script>
+
+    <script>
+        /* 하단 바의 N 로고: index 화면으로 복귀 */
+        document.getElementById("naverHomeBtn").addEventListener("click", function () {
+            if (window.parent !== window) {
+                try {
+                    if (window.frameElement) {
+                        window.frameElement.classList.remove("open");
+                        return;
+                    }
+                } catch (err) { /* 접근할 수 없으면 아래 방식 사용 */ }
+                window.parent.postMessage({ type: "closeApp" }, "*");
+                return;
+            }
+            location.href = "../index.html";
+        });
+    </script>
+</body>
+</html>

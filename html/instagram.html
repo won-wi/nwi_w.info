@@ -1,0 +1,1932 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>인스타그램</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Diphylleia&family=Gowun+Dodum&family=Poor+Story&display=swap" rel="stylesheet">
+    <script src="../prevent.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "Gowun Dodum", sans-serif;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            background: #ffffff;
+            overflow: hidden;
+            padding-bottom: 30px;
+        }
+
+        .instagram-app {
+            position: relative;
+            width: 100%;
+            max-width: 430px;
+            height: 100%;
+            margin: 0 auto;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        /* ===================================================================
+            로딩 화면 디자인
+        ===================================================================  */
+        .instagram-loading {
+            position: absolute;
+            inset: 0;
+            z-index: 1000;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: #ffffff;
+        }
+
+        .instagram-loading i {
+            font-size: 42px;
+            color: #000000;
+        }
+
+        .instagram-loading.hidden {
+            display: none;
+        }
+
+        .screen {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: none;
+        }
+
+        .screen::-webkit-scrollbar {
+            display: none;
+        }
+
+        .topbar {
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            background: #ffffff;
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 19px;
+            font-weight: 600;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 20px;
+            font-size: 21px;
+        }
+
+        .stories {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 14px;
+            padding: 12px;
+            overflow-x: auto;
+            border-bottom: 1px solid #eeeeee;
+            scrollbar-width: none;
+        }
+
+        .stories::-webkit-scrollbar {
+            display: none;
+        }
+
+        .story {
+            width: 64px;
+            min-width: 64px;
+            text-align: center;
+            font-size: 10px;
+        }
+
+        .story-ring {
+            width: 70px;
+            height: 70px;
+            padding: 2px;
+            margin: 0 auto 4px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #f9ce34, #ee2a7b, #6228d7);
+        }
+
+        .story-ring img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+        }
+
+        .post {
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        .post-header {
+            height: 48px;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 0 12px;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            object-fit: cover;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .username {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .post-image {
+            width: 90vw;
+            max-height: calc(100vh - 200px);
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+            -webkit-user-drag: none;
+            user-select: none;
+            display: block;
+        }
+
+        .post-media {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .post-track {
+            width: 100%;
+            display: flex;
+            touch-action: pan-y;
+        }
+
+        .post-slide {
+            min-width: 100%;
+            flex-shrink: 0;
+        }
+
+        .post-counter {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            padding: 4px 10px;
+            border-radius: 14px;
+            background: rgba(0, 0, 0, 0.6);
+            color: #ffffff;
+            font-size: 12px;
+            pointer-events: none;
+        }
+
+        .post-actions {
+            display: flex;
+            align-items: center;
+            gap: 17px;
+            padding: 9px 12px 5px;
+            font-size: 21px;
+        }
+
+        .post-actions .save {
+            margin-left: auto;
+        }
+
+        .post-meta {
+            padding: 0 12px 12px;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .like-button {
+            cursor: pointer;
+        }
+
+        .profile {
+            display: none;
+        }
+
+        .profile-head {
+            padding: 18px 14px 12px;
+        }
+
+        .profile-top {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-name {
+            margin-bottom: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .profile-name-arrow {
+            font-size: 10px;
+            font-weight: 900;
+            margin-left: 6px;
+        }
+
+        .profile-stats {
+            display: flex;
+            justify-content: space-between;
+            text-align: center;
+            padding: 0 8%;
+        }
+
+        .profile-stats strong {
+            display: block;
+            font-size: 15px;
+        }
+
+        .profile-stats span {
+            font-size: 11px;
+        }
+
+        .profile-bio {
+            margin-top: 12px;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 12px;
+        }
+
+        .profile-actions button {
+            flex: 1;
+            height: 32px;
+            border: 0;
+            border-radius: 7px;
+            background: #efefef;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .profile-tabs {
+            height: 46px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            border-top: 1px solid #eeeeee;
+            border-bottom: 1px solid #dddddd;
+        }
+
+        .profile-tabs div {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 19px;
+        }
+
+        .profile-tabs .active {
+            border-bottom: 2px solid #000000;
+        }
+
+        .profile-grid {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px;
+            overflow-x: hidden;
+        }
+
+        .profile-grid-item {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            display: block;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        .account-sheet {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: none;
+            align-items: flex-start;
+            justify-content: center;
+            background: transparent;
+            z-index: 20;
+        }
+
+        /* ===================================================================
+           계정 전환 탭
+        ===================================================================  */
+        .account-panel {
+            width: min(430px, 100%);
+            margin-top: 0;
+            padding: 10px 0 12px;
+            background: #ffffff;
+            border-radius: 0 0 16px 16px;
+            border-bottom: 1.5px solid #eeeeee;
+        }
+
+        .account-title {
+            padding: 8px 18px 12px;
+            color: #777777;
+            font-size: 13px;
+        }
+
+        .account-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 18px;
+            cursor: pointer;
+        }
+
+        .account-option:hover {
+            background: #f5f5f5;
+        }
+
+        .account-option img {
+            width: 42px;
+            height: 42px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .account-option-name {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .check {
+            margin-left: auto;
+            font-size: 15px;
+        }
+
+        .viewer {
+            position: fixed;
+            inset: 0;
+            display: none;
+            flex-direction: column;
+            background: #ffffff;
+            z-index: 30;
+            overflow: hidden;
+            padding-bottom: 10px;
+        }
+
+        .viewer-header {
+            height: 52px;
+            min-height: 52px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 0 14px;
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        .viewer-header i {
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .viewer-body {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: none;
+        }
+
+        .viewer-body::-webkit-scrollbar {
+            display: none;
+        }
+
+        .viewer-media {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .viewer-track {
+            width: 100%;
+            display: flex;
+            touch-action: pan-y;
+        }
+
+        .viewer-slide {
+            min-width: 100%;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .viewer-slide img {
+            width: 90vw;
+            height: auto;
+            max-width: 100%;
+            max-height: calc(100vh - 200px);
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+            -webkit-user-drag: none;
+            user-select: none;
+        }
+
+        .viewer-counter {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            padding: 4px 10px;
+            border-radius: 14px;
+            background: rgba(0, 0, 0, 0.6);
+            color: #ffffff;
+            font-size: 12px;
+            pointer-events: none;
+        }
+
+        .viewer-actions {
+            height: 48px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 0 12px;
+            font-size: 21px;
+        }
+
+        .viewer-actions .save {
+            margin-left: auto;
+        }
+
+        .viewer-caption {
+            padding: 0 12px 20px;
+            font-size: 13px;
+        }
+
+        .viewer-date {
+            font-size: 12px;
+            color: #7a7a7a;
+        }
+
+        .bottom-nav {
+            height: 62px;
+            min-height: 62px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            align-items: center;
+            background: #ffffff;
+            border-top: 1px solid #eeeeee;
+            z-index: 10;
+        }
+
+        .nav-button {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: transparent;
+            font-size: 22px;
+            cursor: pointer;
+        }
+
+        .nav-button i {
+            pointer-events: none;
+        }
+
+        .profile-nav-button img {
+            width: 27px;
+            height: 27px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .notification-dot {
+            position: absolute;
+            width: 7px;
+            height: 7px;
+            right: calc(50% - 17px);
+            top: 34px;
+            border-radius: 50%;
+            background: #ed4956;
+        }
+
+        .nav-button.active {
+            font-weight: 700;
+        }
+
+        .story-viewer {
+            position: fixed;
+            inset: 0;
+            display: none;
+            flex-direction: column;
+            background: #000000;
+            z-index: 50;
+        }
+
+        .story-progress-container {
+            position: absolute;
+            top: 30px;
+            left: 12px;
+            right: 12px;
+            height: 2px;
+            display: flex;
+            gap: 4px;
+            z-index: 52;
+        }
+
+        .story-progress-bar {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .story-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: #ffffff;
+            border-radius: 2px;
+        }
+
+        .story-header {
+            position: absolute;
+            top: 35px;
+            left: 0;
+            right: 0;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 16px;
+            z-index: 51;
+        }
+
+        .story-header .username {
+            color: #ffffff;
+        }
+
+        .story-header i {
+            color: #ffffff;
+            font-size: 24px;
+            margin-left: auto;
+            cursor: pointer;
+        }
+
+        .story-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            cursor: pointer;
+        }
+
+        .story-overlay {
+            position: absolute;
+            display: none;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .story-overlay-item {
+            position: absolute;
+            margin: 0;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+
+        .story-overlay-text {
+            white-space: pre-wrap;
+        }
+
+        .story-overlay-image {
+            display: block;
+        }
+
+        .story-footer {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            z-index: 52;
+        }
+
+        .story-input-container {
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 22px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            overflow: hidden;
+        }
+
+        .story-input {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            outline: none;
+            font-size: 16px;
+            transform: scale(0.8125);
+            transform-origin: left center;
+            width: 123%;
+        }
+
+        .story-input::placeholder {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .story-chat-area {
+            position: absolute;
+            bottom: 95px;
+            left: 16px;
+            right: 16px;
+            z-index: 52;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-start;
+            pointer-events: none;
+        }
+
+        .story-bubble {
+            background: #ffffff;
+            color: #000000;
+            font-size: 13px;
+            padding: 8px 14px;
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            width: fit-content;
+            max-width: 250px;
+            word-wrap: break-word;
+            animation: popIn 0.2s ease-out;
+        }
+
+        .story-bubble-sender {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 5px;
+            color: #ffffff;
+        }
+
+        .story-bubble-sender img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .story-bubble-sender span {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .story-bubble-message {
+            font-size: 13px;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        button {
+            color: #000000;
+        }
+
+        /* ===================================================================
+            하단 브라우저 바 (N 로고만 기능, 나머지는 디자인 요소)
+        ===================================================================  */
+        .browser-bar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            max-width: 430px;
+            margin: 0 auto;
+            height: 60px;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            align-items: start;
+            padding: 0 3px;
+            background: #ffffff;
+            border-top: 0.67px solid #d9d9d9;
+            z-index: 15;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .browser-btn {
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2e2e2e;
+        }
+
+        .browser-btn svg {
+            display: block;
+            overflow: visible;
+        }
+
+        .browser-btn.disabled {
+            color: #cccccc;
+        }
+
+        .browser-home {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="instagram-app">
+    
+    <!-- 이미지 로딩 화면 -->
+    <div id="instagramLoading" class="instagram-loading">
+        <i class="fa-brands fa-instagram" aria-hidden="true"></i>
+    </div>
+
+    <main id="homeScreen" class="screen home-feed">
+        <div class="topbar">
+            <div class="brand">
+                <img src="../img/instagram.png" style="width: 25px;">
+                Instagram
+            </div>
+            <div class="top-actions">
+                <i class="fa-regular fa-heart"></i>
+                <i class="fa-regular fa-paper-plane"></i>
+            </div>
+        </div>
+
+        <div id="stories" class="stories"></div>
+
+        <div id="homePosts"></div>
+    </main>
+
+    <main id="profileScreen" class="screen profile">
+        <div class="topbar">
+            <div id="profileTopbarAccount" class="brand" style="cursor: pointer; display: flex; align-items: center;">
+                <span id="profileTopbarAccountText"></span>
+                <span class="profile-name-arrow">∨</span>
+            </div>
+
+            <div class="top-actions">
+                <i class="fa-regular fa-square-plus"></i>
+                <i class="fa-solid fa-bars"></i>
+            </div>
+        </div>
+
+        <section class="profile-head">
+            <div class="profile-top">
+                <img id="profileAvatar" class="profile-avatar" alt="프로필 이미지">
+                <div class="profile-info">
+                    <div id="profileName" class="profile-name">
+                        <span id="profileNameText"></span>
+                    </div>
+                    <div class="profile-stats">
+                        <div>
+                            <strong id="postCount">0</strong>
+                            <span>게시물</span>
+                        </div>
+                        <div>
+                            <strong id="followerCount">0</strong>
+                            <span>팔로워</span>
+                        </div>
+                        <div>
+                            <strong id="followingCount">0</strong>
+                            <span>팔로잉</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="profileBio" class="profile-bio"></div>
+
+            <div class="profile-actions">
+                <button>프로필 편집</button>
+                <button>프로필 공유</button>
+            </div>
+        </section>
+
+        <div class="profile-tabs">
+            <div class="active">
+                <i class="fa-solid fa-table-cells"></i>
+            </div>
+            <div>
+                <i class="fa-solid fa-clapperboard"></i>
+            </div>
+            <div>
+                <i class="fa-regular fa-user"></i>
+            </div>
+        </div>
+
+        <div id="profileGrid" class="profile-grid"></div>
+    </main>
+
+    <nav class="bottom-nav">
+        <button class="nav-button active" data-screen="home" id="homeNavButton">
+            <i class="fa-solid fa-house"></i>
+        </button>
+        <button class="nav-button">
+            <i class="fa-regular fa-circle-play"></i>
+        </button>
+        <button class="nav-button">
+            <i class="fa-regular fa-paper-plane"></i>
+            <span class="notification-dot"></span>
+        </button>
+        <button class="nav-button">
+            <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+        <button id="profileNavButton" class="nav-button profile-nav-button" data-screen="profile">
+            <img id="bottomProfileAvatar" src="" alt="프로필">
+            <span class="notification-dot"></span>
+        </button>
+    </nav>
+</div>
+
+<!-- 하단 브라우저 바 : N 로고만 index로 이동, 나머지 버튼은 디자인 요소 -->
+<div class="browser-bar">
+    <div id="naverHomeBtn" class="browser-btn browser-home" role="button" aria-label="홈으로">
+        <svg width="23.3" height="23.3" viewBox="0 0 23.3 23.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="1" y="1" width="21.3" height="21.3" rx="4.5"/>
+            <path d="M7.6 15.7V7.7L15.7 15.7V7.7"/>
+        </svg>
+    </div>
+    <div class="browser-btn">
+        <svg width="10.3" height="17.7" viewBox="0 0 10.3 17.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9.3 1L1 8.85L9.3 16.7"/>
+        </svg>
+    </div>
+    <div class="browser-btn disabled">
+        <svg width="10.3" height="17.7" viewBox="0 0 10.3 17.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 1L9.3 8.85L1 16.7"/>
+        </svg>
+    </div>
+    <div class="browser-btn">
+        <svg width="19.6" height="20.5" viewBox="0 0 19.6 20.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9.13" cy="9.3" r="8"/>
+            <path d="M14.8 15.2L18.5 19.4"/>
+        </svg>
+    </div>
+    <div class="browser-btn">
+        <svg width="20" height="19.5" viewBox="0 0 20 19.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18.33 11.93A8.58 8.58 0 1 1 18.4 7.17M18.4 1.67V7.17H13.67"/>
+        </svg>
+    </div>
+    <div class="browser-btn">
+        <svg width="22" height="10" viewBox="0 0 22 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 1H21M1 9H21"/>
+        </svg>
+    </div>
+</div>
+
+<div id="accountSheet" class="account-sheet">
+    <div class="account-panel">
+        <div class="account-title">계정 전환</div>
+        <div id="accountOptions"></div>
+    </div>
+</div>
+
+<div id="viewer" class="viewer">
+    <div class="viewer-header">
+        <i id="viewerClose" class="fa-solid fa-arrow-left"></i>
+        <img id="viewerAvatar" class="avatar" alt="프로필 이미지">
+        <span id="viewerUsername" class="username"></span>
+    </div>
+    <div class="viewer-body">
+        <div class="viewer-media">
+            <div id="viewerTrack" class="viewer-track"></div>
+            <div id="viewerCounter" class="viewer-counter"></div>
+        </div>
+        <div class="viewer-actions">
+            <i id="viewerLike" class="fa-regular fa-heart like-button"></i>
+            <i class="fa-regular fa-comment"></i>
+            <i class="fa-regular fa-paper-plane"></i>
+            <i class="fa-regular fa-bookmark save"></i>
+        </div>
+        <div id="viewerCaption" class="viewer-caption"></div>
+    </div>
+</div>
+
+<div id="storyViewer" class="story-viewer">
+    <div id="storyProgressContainer" class="story-progress-container"></div>
+
+    <div class="story-header">
+        <img id="storyAvatar" class="avatar" alt="프로필 이미지">
+        <span id="storyUsername" class="username"></span>
+        <i id="storyClose" class="fa-solid fa-xmark"></i>
+    </div>
+
+    <img id="storyImage" class="story-image" alt="스토리 이미지">
+
+    <div id="storyOverlay" class="story-overlay"></div>
+
+    <div id="storyChatArea" class="story-chat-area"></div>
+
+    <div class="story-footer">
+        <div class="story-input-container">
+            <input type="text" id="storyInput" class="story-input" placeholder="메시지 보내기" autocomplete="off">
+        </div>
+    </div>
+</div>
+
+<script>
+
+/* 스토리 장식 예시 
+overlays: [
+    { text: "오늘의 OOTD", style: "left:10%; top:15%; color:#fff; font-size:22px; font-weight:700;" },
+    { image: "../img/sticker.png", style: "right:5%; bottom:20%; width:30%; transform:rotate(-10deg);" },
+    { html: "<b>굵게</b> 일부만", style: "left:50%; top:50%; color:#ff0;", className: "내가만든클래스" }
+]
+*/
+
+const accounts = [
+    {
+        username: "back_go",
+        name: "백가윤",
+        avatar: "../img/profile/gawun.png",
+        bio: "무단출입 사절<br><span style='color: #ff0000;'>❤</span> 2019/11/25~ <span style='color: #0A84FF;'>@mudo_kim</span>",
+        followers: "1,248",
+        following: "182",
+        stories: [
+            {
+                image: "../img/instagram/mudo/16.png",
+                defaultMessage: "언제 찍었냐 빨리 오기나 하지.",
+                senderAccountIndex: 3,
+                overlays: [
+                    { text: "예쁜데 ㅋㅋㅋ", style: "right:18%; top:17%; color:#ffffff; font-size:15px; font-weight:400;" }
+                ]
+            },
+            {
+                image: "../img/instagram/mudo/17.png",
+                defaultMessage: "같이 핀다고 따라나왔으면서.",
+                senderAccountIndex: 3,
+                overlays: [
+                    { text: "꼴초", style: "left:25%; top:30%; color:#ffffff; font-size:16px; font-weight:400;" }
+                ]
+            },
+            {
+                image: "../img/instagram/mudo/10.png",
+                defaultMessage: "누가 늦잠 자랬나.",
+                senderAccountIndex: 3,
+                overlays: [
+                    { html: "빨리나와빨리나와빨리나와<br>빨리나와빨리나와빨리나와<br>빨리나와빨리나와빨리나와<br>", style: "right:10%; top:45%; color:#ffffff; font-size:16px; font-weight:400;" }
+                ]
+            },
+            {
+                image: "../img/instagram/mudo/18.png",
+                defaultMessage: "뭔데 그 옷.",
+                senderAccountIndex: 3,
+                overlays: [
+                    { text: "오운완", style: "left:10%; top:12%; color:#000000; font-size:20px; font-weight:700;" }
+                ]
+            }
+        ],
+        posts: [
+            {
+                images: ["../img/instagram/mudo/12.png", "../img/instagram/mudo/13.png",
+                "../img/instagram/mudo/14.png", "../img/instagram/mudo/15.png"],
+                likes: 240,
+                caption: "SD 캐릭터 (+도트)",
+                daysAgo: 1
+            },
+            {
+                images: ["../img/instagram/mudo/8.png", "../img/instagram/mudo/9.png"],
+                likes: 240,
+                caption: "AU. 물리랑 수학 사귄대",
+                daysAgo: 2
+            },
+            {
+                images: ["../img/instagram/mudo/1.png", "../img/instagram/mudo/2.png", "../img/instagram/mudo/3.png",
+                    "../img/instagram/mudo/4.png", "../img/instagram/mudo/5.png", "../img/instagram/mudo/6.png", "../img/instagram/mudo/7.png"],
+                likes: 583,
+                caption: "가윤이의 집<br>다용도실, 주방, 거실, 침실, 욕실, 마당<br>전기히터. 칫솔과 수건. 면도기. 그 다음엔 옷들.",
+                daysAgo: 3
+            },
+            {
+                images: ["../img/instagram/mudo/19.png"],
+                likes: 482,
+                caption: "폴라로이드 사진",
+                daysAgo: 4
+            },
+            {
+                images: ["../img/instagram/mudo/20.png", "../img/instagram/mudo/21.png", "../img/instagram/mudo/22.png"],
+                likes: 240,
+                caption: "가윤이 OOTD<br>월, 화, 수 - 서재나 카페<br>목, 토, 일 - 집에서 무도랑 뒹굴<br>금 - 무도 차 써서 장 보러 감",
+                daysAgo: 5
+            },
+            {
+                images: [
+                    "../img/instagram/mudo/23.png", "../img/instagram/mudo/24.png", "../img/instagram/mudo/25.png",
+                    "../img/instagram/mudo/26.png", "../img/instagram/mudo/27.png", "../img/instagram/mudo/28.png",
+                    "../img/instagram/mudo/29.png"
+                ],
+                likes: 241,
+                caption: "무도 OOTD<br>월 - 미팅<br>화 - 퇴근 후 가윤이 집<br>수 - 미팅<br>목 - 퇴근 후 가윤이 집<br>금 - 일<br>토 - 가윤이 집에서 휴식<br>일 - 청담동 본인 집",
+                daysAgo: 5
+            },
+            {
+                images: ["../img/instagram/mudo/30.png"],
+                likes: 108,
+                caption: "가윤이 일주일 OOTD",
+                daysAgo: 6
+            },
+            {
+                images: ["../img/instagram/mudo/31.png", "../img/instagram/mudo/32.png"],
+                likes: 281,
+                caption: "도트로 된 방",
+                daysAgo: 6
+            },
+            {
+                images: ["../img/instagram/mudo/33.png"],
+                likes: 189,
+                caption: "무도 낙서",
+                daysAgo: 8
+            }
+            
+        ]
+    },
+    {
+        username: "giwyora_ask",
+        name: "아사코 기요라",
+        avatar: "../img/profile/giwyora.png",
+        bio: "외출 X<br><span style='color: #ff0000;'>❤</span> <span style='color: #0A84FF;'>@ao_nagi</span>",
+        followers: "3,921",
+        following: "241",
+        stories: [],
+        posts: [
+            {
+                images: ["../img/instagram/nagi/1.png"],
+                likes: 394,
+                caption: "따귀",
+                daysAgo: 1
+            },
+            {
+                images: ["../img/instagram/nagi/2.png", "../img/instagram/nagi/3.png"],
+                likes: 309,
+                caption: "일주일 OOTD",
+                daysAgo: 2
+            },
+            {
+                images: ["../img/instagram/nagi/4.png", "../img/instagram/nagi/5.png"],
+                likes: 438,
+                caption: "솜인형 ver",
+                daysAgo: 3
+            },
+            {
+                images: ["../img/instagram/nagi/6.png", "../img/instagram/nagi/7.png", "../img/instagram/nagi/8.png"],
+                likes: 165,
+                caption: "홍콩 결혼",
+                daysAgo: 4
+            },
+            {
+                images: ["../img/instagram/nagi/9.png", "../img/instagram/nagi/10.png"],
+                likes: 193,
+                caption: "90's window",
+                daysAgo: 5
+            },
+            {
+                images: ["../img/instagram/nagi/11.png", "../img/instagram/nagi/12.png"],
+                likes: 421,
+                caption: "What's in My Bag",
+                daysAgo: 7
+            }
+        ]
+    },
+    {
+        username: "hazel_to",
+        name: "헤이즐",
+        avatar: "../img/profile/hazel.png",
+        bio: "연애 X",
+        followers: "872",
+        following: "94",
+        stories: [
+            {
+                image: "../img/instagram/hazel/1.png"
+            },
+            {
+                image: "../img/instagram/hazel/2.png"
+            }
+        ],
+        posts: [
+            {
+                images: ["../img/instagram/hazel/3.png"],
+                likes: 64,
+                caption: "쇼핑",
+                daysAgo: 20
+            },
+            {
+                images: ["../img/instagram/hazel/4.png"],
+                likes: 108,
+                caption: "거울",
+                daysAgo: 23
+            },
+            {
+                images: ["../img/instagram/hazel/5.png"],
+                likes: 222,
+                caption: "잔디밭",
+                daysAgo: 26
+            },
+            {
+                images: ["../img/instagram/hazel/6.png", "../img/instagram/hazel/7.png"],
+                likes: 91,
+                caption: "학교",
+                daysAgo: 27
+            }
+        ]
+    },
+
+    {
+        username: "mudo_kim",
+        name: "김무도",
+        avatar: "../img/profile/mudo.png",
+        bio: "",
+        followers: "0",
+        following: "0",
+        stories: [
+            {
+                image: "../img/instagram/mudo/34.png",
+                defaultMessage: "이걸 왜 올려 미친놈아.",
+                senderAccountIndex: 0,
+                overlays: [
+                    { text: "볼살 ㅋㅋ", style: "right:20%; top:22%; color:#ffffff; font-size:20px; font-weight:500;" }
+                ]
+            },
+            {
+                image: "../img/instagram/mudo/35.png",
+                defaultMessage: "언제 찍음?",
+                senderAccountIndex: 0,
+                overlays: [
+                    { text: "ㅋㅋ", style: "right:8%; top:23%; color:#ffffff; font-size:20px; font-weight:700;" }
+                ]
+            },
+            {
+                image: "../img/instagram/mudo/36.png",
+                defaultMessage: "불꽃놀이를 찍었어야지",
+                senderAccountIndex: 0,
+                overlays: [
+                    { text: "선글라스 내 껀데", style: "left:8%; top:16%; color:#ffffff; font-size:15px; font-weight:500;" }
+                ]
+            }
+        ],
+        posts: [],
+        hiddenFromSwitcher: true
+    },
+
+    {
+        username: "ao_nagi",
+        name: "아오이시 나기",
+        avatar: "../img/profile/nagi.png",
+        bio: "",
+        followers: "0",
+        following: "0",
+        stories: [
+            {
+                image: "../img/instagram/nagi/13.png",
+                defaultMessage: "예쁘네.",
+                senderAccountIndex: 1,
+                overlays: []
+            },
+            {
+                image: "../img/instagram/nagi/14.png",
+                defaultMessage: "",
+                senderAccountIndex:"",
+                overlays: []
+            }
+        ],
+        posts: [],
+        hiddenFromSwitcher: true
+    }
+];
+
+let currentAccount = 0;
+let currentStoryAccountIndex = 0;
+let currentStoryImageIndex = 0;
+let progressInterval = null;
+const STORY_DURATION = 4000;
+const storyUserProfile = {
+    username: "gudok",
+    avatar: "../img/profile/base.jpg"
+};
+
+Object.keys(sessionStorage).forEach(key => {
+    if (key.startsWith("story_chat_")) {
+        sessionStorage.removeItem(key);
+    }
+});
+
+const homeScreen = document.getElementById("homeScreen");
+const profileScreen = document.getElementById("profileScreen");
+const stories = document.getElementById("stories");
+const homePosts = document.getElementById("homePosts");
+const profileGrid = document.getElementById("profileGrid");
+const accountSheet = document.getElementById("accountSheet");
+const accountOptions = document.getElementById("accountOptions");
+const viewer = document.getElementById("viewer");
+const viewerTrack = document.getElementById("viewerTrack");
+const viewerBody = document.querySelector(".viewer-body");
+const viewerCounter = document.getElementById("viewerCounter");
+const viewerCaption = document.getElementById("viewerCaption");
+const viewerLike = document.getElementById("viewerLike");
+
+const storyViewer = document.getElementById("storyViewer");
+const storyImage = document.getElementById("storyImage");
+storyImage.addEventListener("contextmenu", e => e.preventDefault());
+storyImage.addEventListener("dragstart", e => e.preventDefault());
+
+const storyOverlay = document.getElementById("storyOverlay");
+
+const storyProgressContainer = document.getElementById("storyProgressContainer");
+const storyChatArea = document.getElementById("storyChatArea");
+const storyInput = document.getElementById("storyInput");
+
+function setupLikeButton(button) {
+    button.addEventListener("click", function () {
+        this.classList.toggle("fa-regular");
+        this.classList.toggle("fa-solid");
+        if (this.classList.contains("fa-solid")) {
+            this.style.color = "#ed4956";
+        } else {
+            this.style.color = "";
+        }
+    });
+}
+
+function updateProfileAvatar() {
+    const account = accounts[currentAccount];
+    document.getElementById("bottomProfileAvatar").src = account.avatar;
+}
+
+function showHome() {
+    homeScreen.style.display = "block";
+    profileScreen.style.display = "none";
+    document.querySelectorAll(".nav-button").forEach(button => {
+        button.classList.remove("active");
+    });
+    document.querySelector('.nav-button[data-screen="home"]').classList.add("active");
+}
+
+function showProfile() {
+    homeScreen.style.display = "none";
+    profileScreen.style.display = "block";
+    renderProfile();
+    document.querySelectorAll(".nav-button").forEach(button => {
+        button.classList.remove("active");
+    });
+    document.querySelector('.nav-button[data-screen="profile"]').classList.add("active");
+}
+
+document.getElementById("homeNavButton").addEventListener("click", () => { showHome(); renderHome(); homeScreen.scrollTop = 0; });
+document.getElementById("profileNavButton").addEventListener("click", () => { showProfile(); });
+
+function openAccountSheet() {
+    accountOptions.innerHTML = "";
+    accounts.forEach((account, index) => {
+        if (account.hiddenFromSwitcher) return;
+
+        const option = document.createElement("div");
+
+        option.className = "account-option";
+        option.innerHTML = `
+            <img src="${account.avatar}" alt="">
+            <span class="account-option-name">${account.username}</span>
+            ${index === currentAccount ? `<i class="fa-solid fa-check check"></i>` : ""}
+        `;
+        option.addEventListener("click", () => {
+            switchAccount(index);
+        });
+        accountOptions.appendChild(option);
+    });
+    accountSheet.style.display = "flex";
+}
+
+function switchAccount(index) {
+    currentAccount = index;
+    accountSheet.style.display = "none";
+    updateProfileAvatar();
+    renderProfile();
+    renderHome();
+}
+
+document.getElementById("profileTopbarAccount").addEventListener("click", openAccountSheet);
+
+accountSheet.addEventListener("click", event => {
+    if (event.target === accountSheet) {
+        accountSheet.style.display = "none";
+    }
+});
+
+function renderStories() {
+    stories.innerHTML = "";
+    accounts.forEach((account, index) => {
+        if (!account.stories || account.stories.length === 0 || account.stories[0] === "") return;
+
+        const story = document.createElement("div");
+        story.className = "story";
+        story.innerHTML = `
+            <div class="story-ring" style="cursor: pointer;">
+                <img src="${account.avatar}" alt="">
+            </div>
+            <div>${account.username}</div>
+        `;
+
+        let startX = 0;
+        story.addEventListener("click", () => {
+            openStory(index);
+        });
+
+        story.addEventListener("touchend", () => {
+            openStory(index);
+        });
+
+        story.addEventListener("touchend", () => {
+            if (!isStoryDragging) openStory(index);
+        });
+
+        stories.appendChild(story);
+    });
+}
+
+function setupPostSlider(element, total) {
+    const track = element.querySelector(".post-track");
+    const counter = element.querySelector(".post-counter");
+
+    let currentIndex = 0;
+    let startX = 0;
+    let currentX = 0;
+    let isDragging = false;
+
+    function dragStart(event) {
+        if (event.pointerType === "mouse" && event.button !== 0) return;
+        isDragging = true;
+        startX = event.clientX;
+        currentX = startX;
+        track.style.transition = "none";
+        track.setPointerCapture(event.pointerId);
+    }
+
+    function dragMove(event) {
+        if (!isDragging) return;
+        currentX = event.clientX;
+        const difference = currentX - startX;
+        track.style.transform = `translateX(calc(${-currentIndex * 100}% + ${difference}px))`;
+    }
+
+    function dragEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        const difference = currentX - startX;
+
+        if (difference < -50 && currentIndex < total - 1) {
+            currentIndex++;
+        } else if (difference > 50 && currentIndex > 0) {
+            currentIndex--;
+        }
+
+        track.style.transition = "transform 0.25s ease-out";
+        track.style.transform = `translateX(${-currentIndex * 100}%)`;
+        counter.textContent = `${currentIndex + 1} / ${total}`;
+    }
+
+    track.onpointerdown = dragStart;
+    track.onpointermove = dragMove;
+    track.onpointerup = dragEnd;
+    track.onpointercancel = dragEnd;
+}
+
+
+function renderHome() {
+    homePosts.innerHTML = "";
+    const allPosts = [];
+
+    accounts.forEach((account, index) => {
+
+        if (account.posts.length > 0) {
+            const post = account.posts[Math.floor(Math.random() * account.posts.length)];
+
+            allPosts.push({
+                username: account.username,
+                avatar: account.avatar,
+                images: post.images,
+                likes: post.likes,
+                caption: post.caption
+            });
+        }
+    });
+
+    allPosts.forEach(post => {
+        const element = document.createElement("article");
+        element.className = "post";
+        element.innerHTML = `
+            <div class="post-header">
+                <img class="avatar" src="${post.avatar}" alt="">
+                <span class="username">${post.username}</span>
+            </div>
+            <div class="post-media">
+                <div class="post-track">
+                    ${post.images.map(imageURL => `<div class="post-slide"><img class="post-image" src="${imageURL}" alt="" draggable="false"></div>`).join("")}
+                </div>
+                ${post.images.length > 1 ? `<div class="post-counter">1 / ${post.images.length}</div>` : ""}
+            </div>
+            <div class="post-actions">
+                <i class="fa-regular fa-heart like-button"></i>
+                <i class="fa-regular fa-comment"></i>
+                <i class="fa-regular fa-paper-plane"></i>
+                <i class="fa-regular fa-bookmark save"></i>
+            </div>
+            <div class="post-meta">
+                <strong>좋아요 ${post.likes}개</strong><br>
+                <b>${post.username}</b> ${post.caption}
+            </div>
+        `;
+        setupLikeButton(element.querySelector(".like-button"));
+        if (post.images.length > 1) setupPostSlider(element, post.images.length);
+        homePosts.appendChild(element);
+    });
+}
+
+function renderProfile() {
+    const account = accounts[currentAccount];
+
+    document.getElementById("profileTopbarAccountText").textContent = account.username;
+
+    document.getElementById("profileAvatar").src = account.avatar;
+    document.getElementById("profileNameText").textContent = account.name;
+    document.getElementById("profileBio").innerHTML = account.bio;
+    document.getElementById("postCount").textContent = account.posts.length;
+    document.getElementById("followerCount").textContent = account.followers;
+    document.getElementById("followingCount").textContent = account.following;
+
+    profileGrid.innerHTML = "";
+
+    account.posts.forEach((post, index) => {
+        const image = document.createElement("img");
+        image.className = "profile-grid-item";
+        image.src = post.images[0];
+        image.alt = "";
+        image.addEventListener("click", () => {
+            openViewer(index);
+        });
+        profileGrid.appendChild(image);
+    });
+}
+
+setupLikeButton(viewerLike);
+
+function formatPostDate(daysAgo = 0) {
+    const date = new Date();
+    date.setDate(date.getDate() - daysAgo);
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+}
+
+function openViewer(postIndex) {
+    const account = accounts[currentAccount];
+    const post = account.posts[postIndex];
+    const total = post.images.length;
+
+    document.getElementById("viewerAvatar").src = account.avatar;
+    document.getElementById("viewerUsername").textContent = account.username;
+    viewerCaption.innerHTML = `<b>${account.username}</b> ${post.caption}<br><span class="viewer-date">${formatPostDate(post.daysAgo)}</span>`;
+
+    viewerLike.classList.add("fa-regular");
+    viewerLike.classList.remove("fa-solid");
+    viewerLike.style.color = "";
+
+    viewerTrack.innerHTML = "";
+
+    post.images.forEach(imageURL => {
+        const slide = document.createElement("div");
+        slide.className = "viewer-slide";
+        slide.innerHTML = `<img src="${imageURL}" alt="" draggable="false">`;
+        viewerTrack.appendChild(slide);
+    });
+
+    viewerBody.scrollTop = 0;
+    viewer.style.display = "flex";
+    viewerTrack.style.transition = "none";
+    viewerTrack.style.transform = "translateX(0)";
+
+    let currentIndex = 0;
+    let startX = 0;
+    let currentX = 0;
+    let isDragging = false;
+
+    function updateCounter() {
+        viewerCounter.textContent = `${currentIndex + 1} / ${total}`;
+    }
+
+    function dragStart(event) {
+        if (event.pointerType === "mouse" && event.button !== 0) return;
+        isDragging = true;
+        startX = event.clientX;
+        currentX = startX;
+        viewerTrack.style.transition = "none";
+        viewerTrack.setPointerCapture(event.pointerId);
+    }
+
+    function dragMove(event) {
+        if (!isDragging) return;
+        currentX = event.clientX;
+        const difference = currentX - startX;
+        viewerTrack.style.transform = `translateX(calc(${-currentIndex * 100}% + ${difference}px))`;
+    }
+
+    function dragEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        const difference = currentX - startX;
+
+        if (difference < -50 && currentIndex < total - 1) {
+            currentIndex++;
+        } else if (difference > 50 && currentIndex > 0) {
+            currentIndex--;
+        }
+
+        viewerTrack.style.transition = "transform 0.25s ease-out";
+        viewerTrack.style.transform = `translateX(${-currentIndex * 100}%)`;
+        updateCounter();
+    }
+
+    viewerTrack.onpointerdown = dragStart;
+    viewerTrack.onpointermove = dragMove;
+    viewerTrack.onpointerup = dragEnd;
+    viewerTrack.onpointercancel = dragEnd;
+
+    updateCounter();
+}
+
+document.getElementById("viewerClose").addEventListener("click", () => {
+    viewer.style.display = "none";
+    viewerTrack.onpointerdown = null;
+    viewerTrack.onpointermove = null;
+    viewerTrack.onpointerup = null;
+    viewerTrack.onpointercancel = null;
+});
+
+function openStory(accountIndex) {
+    currentStoryAccountIndex = accountIndex;
+    currentStoryImageIndex = 0;
+    const account = accounts[accountIndex];
+
+    document.getElementById("storyAvatar").src = account.avatar;
+    document.getElementById("storyUsername").textContent = account.username;
+
+    try {
+        if (window.parent && typeof window.parent.setInstagramStoryStatusColor === 'function') {
+            window.parent.setInstagramStoryStatusColor(true);
+        }
+    } catch (e) {
+        console.log("부모 창 연동 예외 발생:", e);
+    }
+
+    storyProgressContainer.innerHTML = "";
+    account.stories.forEach(() => {
+        const bar = document.createElement("div");
+        bar.className = "story-progress-bar";
+        bar.innerHTML = `<div class="story-progress-fill"></div>`;
+        storyProgressContainer.appendChild(bar);
+    });
+
+    updateStoryImage();
+    storyViewer.style.display = "flex";
+}
+
+function closeStory() {
+    storyViewer.style.display = "none";
+    clearInterval(progressInterval);
+
+    try {
+        if (window.parent && typeof window.parent.setInstagramStoryStatusColor === 'function') {
+            window.parent.setInstagramStoryStatusColor(false);
+        }
+    } catch (e) {
+        console.log("부모 창 연동 예외 발생:", e);
+    }
+}
+
+function layoutStoryOverlay() {
+    const naturalWidth = storyImage.naturalWidth;
+    const naturalHeight = storyImage.naturalHeight;
+    const boxWidth = storyImage.clientWidth;
+    const boxHeight = storyImage.clientHeight;
+
+    if (!naturalWidth || !naturalHeight || !boxWidth || !boxHeight) {
+        storyOverlay.style.display = "none";
+        return;
+    }
+
+    const scale = Math.min(boxWidth / naturalWidth, boxHeight / naturalHeight);
+    const width = naturalWidth * scale;
+    const height = naturalHeight * scale;
+
+    storyOverlay.style.width = width + "px";
+    storyOverlay.style.height = height + "px";
+    storyOverlay.style.left = (storyImage.offsetLeft + (boxWidth - width) / 2) + "px";
+    storyOverlay.style.top = (storyImage.offsetTop + (boxHeight - height) / 2) + "px";
+    storyOverlay.style.display = "block";
+}
+
+function renderStoryOverlay(story) {
+    storyOverlay.innerHTML = "";
+    storyOverlay.style.display = "none";
+
+    (story.overlays || []).forEach(item => {
+        let element;
+
+        if (item.image) {
+            element = document.createElement("img");
+            element.src = item.image;
+            element.alt = "";
+            element.draggable = false;
+            element.className = "story-overlay-item story-overlay-image";
+        } else {
+            element = document.createElement("div");
+            element.className = "story-overlay-item story-overlay-text";
+            if (item.html) element.innerHTML = item.html;
+            else element.textContent = item.text || "";
+        }
+
+        if (item.className) element.className += " " + item.className;
+        if (item.style) element.style.cssText = item.style;
+
+        storyOverlay.appendChild(element);
+    });
+
+    if (storyImage.complete) layoutStoryOverlay();
+}
+
+storyImage.addEventListener("load", layoutStoryOverlay);
+window.addEventListener("resize", layoutStoryOverlay);
+
+function updateStoryImage() {
+    const account = accounts[currentStoryAccountIndex];
+    const story = account.stories[currentStoryImageIndex];
+
+    storyImage.src = story.image;
+    renderStoryOverlay(story);
+    window.scrollTo(0, 0);
+
+    storyChatArea.innerHTML = "";
+    storyInput.value = "";
+
+    if (story.defaultMessage) {
+        const sender = accounts[story.senderAccountIndex];
+
+        appendBubble(
+            story.defaultMessage,
+            sender.username,
+            sender.avatar
+        );
+    }
+
+    const storageKey = `story_chat_${currentStoryAccountIndex}_${currentStoryImageIndex}`;
+    let chatList = JSON.parse(sessionStorage.getItem(storageKey)) || [];
+
+    chatList.forEach(message => {
+        appendBubble(
+            message.text,
+            message.username,
+            message.avatar
+        );
+    });
+
+    startStoryTimer();
+}
+
+function startStoryTimer() {
+    clearInterval(progressInterval);
+    const fills = document.querySelectorAll(".story-progress-fill");
+
+    fills.forEach((fill, idx) => {
+        if (idx < currentStoryImageIndex) fill.style.width = "100%";
+        else if (idx > currentStoryImageIndex) fill.style.width = "0%";
+    });
+
+    const currentFill = fills[currentStoryImageIndex];
+    if (currentFill) currentFill.style.width = "0%";
+
+    let startTime = Date.now();
+
+    progressInterval = setInterval(() => {
+        let elapsed = Date.now() - startTime;
+        let percent = (elapsed / STORY_DURATION) * 100;
+
+        if (percent >= 100) {
+            percent = 100;
+            clearInterval(progressInterval);
+            goToNextStory();
+        }
+        if (currentFill) currentFill.style.width = percent + "%";
+    }, 16);
+}
+
+function goToNextStory() {
+    const account = accounts[currentStoryAccountIndex];
+    if (currentStoryImageIndex < account.stories.length - 1) {
+        currentStoryImageIndex++;
+        updateStoryImage();
+    } else {
+        closeStory();
+    }
+}
+
+function goToPrevStory() {
+    if (currentStoryImageIndex > 0) {
+        currentStoryImageIndex--;
+        updateStoryImage();
+    } else {
+        closeStory();
+    }
+}
+
+function appendBubble(text, senderUsername = null, senderAvatar = null) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "story-bubble-wrapper";
+
+    if (senderUsername) {
+        const sender = document.createElement("div");
+        sender.className = "story-bubble-sender";
+
+        if (senderAvatar) {
+            sender.innerHTML = `
+                <img src="${senderAvatar}" alt="">
+                <span>${senderUsername}</span>
+            `;
+        } else {
+            sender.innerHTML = `
+                <span>${senderUsername}</span>
+            `;
+        }
+
+        wrapper.appendChild(sender);
+    }
+
+    const bubble = document.createElement("div");
+    bubble.className = "story-bubble";
+    bubble.textContent = text;
+
+    wrapper.appendChild(bubble);
+    storyChatArea.appendChild(wrapper);
+}
+
+document.getElementById("storyClose").addEventListener("click", closeStory);
+
+storyImage.addEventListener("click", (event) => {
+    const clickX = event.clientX;
+    const screenWidth = window.innerWidth;
+
+    if (clickX < screenWidth * 0.3) {
+        goToPrevStory();
+    } else {
+        goToNextStory();
+    }
+});
+
+storyInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter" && storyInput.value.trim() !== "") {
+        const text = storyInput.value.trim();
+        storyInput.value = "";
+
+        appendBubble(
+            text,
+            storyUserProfile.username,
+            storyUserProfile.avatar
+        );
+
+        const storageKey = `story_chat_${currentStoryAccountIndex}_${currentStoryImageIndex}`;
+        let chatList = JSON.parse(sessionStorage.getItem(storageKey)) || [];
+
+        chatList.push({
+            text: text,
+            username: storyUserProfile.username,
+            avatar: storyUserProfile.avatar
+        });
+
+        sessionStorage.setItem(storageKey, JSON.stringify(chatList));
+
+        storyInput.focus();
+    }
+});
+
+renderStories();
+renderHome();
+updateProfileAvatar();
+showHome();
+
+
+/* 모든 인스타그램 이미지 로딩 완료 후 로딩 화면 제거 */
+(async function () {
+    const loadingScreen = document.getElementById("instagramLoading");
+    const imageUrls = new Set();
+
+    // 현재 화면에 생성된 이미지
+    document.querySelectorAll("img").forEach(img => {
+        if (img.src) imageUrls.add(img.src);
+    });
+
+    // accounts 데이터에 등록된 이미지
+    function collectImages(value) {
+        if (typeof value === "string") {
+            if (/\.(png|jpe?g|webp|gif|svg)(?:[?#].*)?$/i.test(value)) {
+                imageUrls.add(new URL(value, document.baseURI).href);
+            }
+        } else if (Array.isArray(value)) {
+            value.forEach(collectImages);
+        } else if (value && typeof value === "object") {
+            Object.values(value).forEach(collectImages);
+        }
+    }
+
+    collectImages(accounts);
+
+    // 이미지가 로드되거나 실패한 경우 모두 완료로 처리
+    function loadImage(url) {
+        return new Promise(resolve => {
+            const img = new Image();
+            const finish = () => resolve();
+
+            img.onload = finish;
+            img.onerror = finish;
+            img.src = url;
+
+            if (img.complete) finish();
+        });
+    }
+
+    await Promise.all([...imageUrls].map(loadImage));
+
+    loadingScreen.classList.add("hidden");
+})();
+
+/* 뒤로 버튼 */
+document.getElementById("naverHomeBtn").addEventListener("click", function () {
+    if (window.parent !== window) {
+        try {
+            if (window.frameElement) {
+                window.frameElement.classList.remove("open");
+                return;
+            }
+        } catch (err) { /* 접근할 수 없으면 아래 방식 사용 */ }
+        window.parent.postMessage({ type: "closeApp" }, "*");
+        return;
+    }
+    // 단독으로 열린 경우: index.html로 이동
+    location.href = "../index.html";
+});
+
+</script>
+</body>
+</html>

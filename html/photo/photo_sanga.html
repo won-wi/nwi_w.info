@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Diphylleia&family=Gowun+Dodum&family=Poor+Story&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <script src="../../prevent.js"></script>
+    
+    <style>
+        html, body {
+            margin: 0;
+            height: 100%;
+        }
+
+        body {
+            background: #ffffff;
+            font-family: "Noto Sans KR", sans-serif;
+            color: #222222;
+            overflow: hidden;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        /* ===== MYBOX 사진 화면 (index 창 안에 맞춤) ===== */
+        .app {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #ffffff;
+            padding-bottom: 60px;
+        }
+
+        .app, .app * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 상단 헤더 : 위 40px은 다이나믹 아일랜드 영역, 아래 73px이 제목 줄 */
+        .header {
+            flex: 0 0 auto;
+            padding: 20px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ffffff;
+        }
+
+        .header-title {
+            font-size: 21px;
+            font-weight: 700;
+            color: #222222;
+            line-height: 1;
+        }
+
+        .header-icons {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+            color: #222222;
+            line-height: 1;
+        }
+
+        .icon-sort {
+            display: flex;
+            align-items: center;
+            font-size: 17px;
+        }
+
+        .icon-sort i + i {
+            margin-left: -1.5px;
+        }
+
+        .icon-search {
+            font-size: 20px;
+        }
+
+        .icon-profile {
+            font-size: 24px;
+        }
+
+        /* 날짜 줄 (오른쪽에 전체 / 즐겨찾기 탭) */
+        .date-bar {
+            flex: 0 0 auto;
+            height: 50px;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ffffff;
+        }
+
+        .date-label {
+            font-size: 14px;
+            font-weight: 400;
+            color: #222222;
+            line-height: 18px;
+        }
+
+        /* ===== 갤러리 탭 ===== */
+        .tab-menu {
+            display: flex;
+            gap: 6px;
+        }
+
+        .tab-btn {
+            height: 26px;
+            padding: 0 11px;
+            border: none;
+            border-radius: 13px;
+            background: #f5f6fa;
+            color: #555555;
+            font-size: 12px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        .tab-btn.active {
+            background: #222222;
+            color: #ffffff;
+        }
+
+        /* ===== 사진 목록 (4열) + 하단 푸터 ===== */
+        .gallery-wrap {
+            flex: 1 1 auto;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            background: #ffffff;
+        }
+
+        .gallery-wrap::-webkit-scrollbar {
+            display: none;
+        }
+
+        .gallery-wrap > div {
+            flex: 0 0 auto;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2px;
+            padding-top: 0;
+            padding-bottom: 20px;
+        }
+
+        .gallery-item {
+            aspect-ratio: 1/1;
+            overflow: hidden;
+            cursor: pointer;
+            background: #000000;
+        }
+
+        .gallery-item img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 자동 정사각형 변환 */
+        }
+
+        /* ===== 하단 탭바 ===== */
+        .bottom-tabs {
+            flex: 0 0 54px;
+            display: flex;
+            justify-content: space-between;
+            padding-top: 6px;
+            background: #ffffff;
+            border-top: 0.5px solid #e0e0e0;
+        }
+
+        .bottom-tab {
+            flex: 0 1 94px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .bottom-tab-icon {
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1e1e1e;
+            line-height: 1;
+        }
+
+        .bottom-tab-photo { font-size: 25px; }
+        .bottom-tab-folder { font-size: 22px; }
+
+        .bottom-tab-app {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            background: #4d76f6;
+            color: #ffffff;
+            font-size: 13px;
+        }
+
+        .bottom-tab span.label {
+            margin-top: 4px;
+            font-size: 10px;
+            line-height: 12px;
+            color: #000000;
+        }
+
+        /* 전체보기 슬라이드 */
+        #viewer {
+            position: fixed;
+            top:0;
+            left:0;
+            width:100%;
+            height:100%;
+            background:#F2F2F7;
+            display:none;
+            z-index: 1000;
+        }
+
+        .slide {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: none;
+            animation: smoothAppear 0.25s ease-out forwards;
+        }
+
+        .slide img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            transform-origin: center;
+        }
+
+        .credit {
+            position: absolute;
+            bottom: 35px;
+            right: 25px;
+            color: #000000;
+            font-size: 11px;
+            opacity: 0.75;
+            text-shadow:
+                0 0 3px #ffffff,
+                0 0 3px #ffffff;
+            z-index: 1020;
+            pointer-events: none;
+            font-family: "Gowun Dodum", sans-serif;
+        }
+
+        .slide-wrapper{
+            display:flex;
+            width:100%;
+            height:100%;
+            transition:transform .25s ease;
+        }
+
+        @keyframes smoothAppear {
+            from { 
+                opacity: 0; /* 처음엔 투명하게 */
+                transform: scale(0.95); /* 살짝 작았다가 */
+            }
+            to { 
+                opacity: 1; /* 선명해지면서 */
+                transform: scale(1); /* 원래 크기로 */
+            }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 40px;
+            right: 20px;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            text-shadow: 0px 0px 7px black;
+            z-index: 1010;
+        }
+
+        /* ===================================================================
+        하단 브라우저 바 (N 로고만 기능, 나머지는 디자인 요소)
+    ===================================================================  */
+    .browser-bar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        max-width: 430px;
+        margin: 0 auto;
+        height: 60px;
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        align-items: start;
+        padding: 0 3px;
+        background: #ffffff;
+        border-top: 0.67px solid #d9d9d9;
+        z-index: 15;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .browser-btn {
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #2e2e2e;
+    }
+
+    .browser-btn svg {
+        display: block;
+        overflow: visible;
+    }
+
+    .browser-btn.disabled {
+        color: #cccccc;
+    }
+
+    .browser-home {
+        cursor: pointer;
+    }
+    </style>
+</head>
+<body>
+
+    <div class="app">
+
+        <!-- 상단 헤더 -->
+        <div class="header">
+            <div class="header-title">MYBOX 사진</div>
+            <div class="header-icons">
+                <span class="icon-sort"><i class="fa-solid fa-arrow-up-long"></i><i class="fa-solid fa-arrow-down-long"></i></span>
+                <i class="fa-solid fa-magnifying-glass icon-search"></i>
+                <i class="fa-regular fa-circle-user icon-profile"></i>
+            </div>
+        </div>
+
+        <!-- 날짜 + 탭 -->
+        <div class="date-bar">
+            <div class="date-label" data-days-ago="6"></div>
+
+            <div class="tab-menu">
+                <button class="tab-btn active" onclick="showTab('all', this)">
+                    전체
+                </button>
+
+                <button class="tab-btn" onclick="showTab('favorite', this)">
+                    즐겨찾기
+                </button>
+            </div>
+        </div>
+
+        <div class="gallery-wrap">
+
+            <div> <!-- 전체 사진들 -->
+                <div class="gallery-grid" id="allGallery"></div>
+            </div>
+
+            <div> <!-- 즐겨찾기 -->
+                <div class="gallery-grid" id="favoriteGallery" style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- 하단 탭바 (파일 탭 = 뒤로 가기) -->
+        <nav class="bottom-tabs">
+            <div class="bottom-tab">
+                <div class="bottom-tab-icon bottom-tab-photo"><i class="fa-solid fa-image"></i></div>
+                <span class="label">사진</span>
+            </div>
+            <div class="bottom-tab" onclick="goBack()">
+                <div class="bottom-tab-icon bottom-tab-folder"><i class="fa-regular fa-folder"></i></div>
+                <span class="label">파일</span>
+            </div>
+            <div class="bottom-tab">
+                <div class="bottom-tab-icon bottom-tab-app"><i class="fa-solid fa-cube"></i></div>
+                <span class="label">앱 열기</span>
+            </div>
+        </nav>
+
+    </div>
+
+    <!-- 하단 브라우저 바 : N 로고만 index로 이동, 나머지 버튼은 디자인 요소 -->
+    <div class="browser-bar">
+        <div id="naverHomeBtn" class="browser-btn browser-home" role="button" aria-label="홈으로">
+            <svg width="23.3" height="23.3" viewBox="0 0 23.3 23.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="1" y="1" width="21.3" height="21.3" rx="4.5"/>
+                <path d="M7.6 15.7V7.7L15.7 15.7V7.7"/>
+            </svg>
+        </div>
+        <div class="browser-btn">
+            <svg width="10.3" height="17.7" viewBox="0 0 10.3 17.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9.3 1L1 8.85L9.3 16.7"/>
+            </svg>
+        </div>
+        <div class="browser-btn disabled">
+            <svg width="10.3" height="17.7" viewBox="0 0 10.3 17.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 1L9.3 8.85L1 16.7"/>
+            </svg>
+        </div>
+        <div class="browser-btn">
+            <svg width="19.6" height="20.5" viewBox="0 0 19.6 20.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="9.13" cy="9.3" r="8"/>
+                <path d="M14.8 15.2L18.5 19.4"/>
+            </svg>
+        </div>
+        <div class="browser-btn">
+            <svg width="20" height="19.5" viewBox="0 0 20 19.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18.33 11.93A8.58 8.58 0 1 1 18.4 7.17M18.4 1.67V7.17H13.67"/>
+            </svg>
+        </div>
+        <div class="browser-btn">
+            <svg width="22" height="10" viewBox="0 0 22 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 1H21M1 9H21"/>
+            </svg>
+        </div>
+    </div>
+
+    <div id="viewer">
+        <span class="close-btn" onclick="closeViewer()">×</span>
+        <div id="slide-wrapper" class="slide-wrapper"></div>
+    </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        createGallery();
+
+        const wrap = document.querySelector(".gallery-wrap");
+        wrap.scrollTop = wrap.scrollHeight;
+    });
+
+const IMAGE_PATH = "../../img/sanga/";
+
+// 사진 목록
+const images = Array.from({length: 94}, (_, i) =>
+    IMAGE_PATH + `${i + 1}.png`
+);
+
+// 작가 이름
+const credits = [
+    "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai",
+    "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai",
+    "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai",
+    "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai",
+    "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai",
+    "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai",
+    "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai",
+    "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai",
+    "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai", "© ai",
+    "© ai", "© ai", "© ai", "© ai", "© ai"
+];
+
+// 즐겨찾기 관리
+const favorites = [
+    3, 13, 37, 38, 39, 48, 68, 81, 85, 89, 90
+];
+
+const viewer = document.getElementById('viewer');
+const slideContainer = document.getElementById('slide-wrapper');
+
+const allGallery = document.getElementById("allGallery");
+const favoriteGallery = document.getElementById("favoriteGallery");
+
+let currentTab = 'all';
+
+// ===== 슬라이드용 =====
+let currentIndex = 0;
+
+let startSwipeX = 0;
+let endSwipeX = 0;
+
+let isZooming = false;
+
+function createGallery() {
+
+    allGallery.innerHTML = "";
+    favoriteGallery.innerHTML = "";
+
+    images.forEach((src, index) => {
+
+        allGallery.innerHTML += `
+            <div class="gallery-item" onclick="openViewer(${index})">
+                <img src="${src}" alt="">
+            </div>
+        `;
+
+    });
+
+    favorites.forEach(index => {
+
+        favoriteGallery.innerHTML += `
+            <div class="gallery-item" onclick="openViewer(${index})">
+                <img src="${images[index]}" alt="">
+            </div>
+        `;
+
+    });
+
+}
+
+let currentScale = 1;
+let startX = 0, startY = 0;
+let translateX = 0, translateY = 0;
+let lastTranslateX = 0, lastTranslateY = 0;
+let startDistance = 0;
+
+function goBack(){
+    location.href = "photo_list.html";
+}
+
+function openViewer(index) {
+
+    viewer.style.display = "block";
+
+    currentIndex = index;
+
+    slideContainer.innerHTML =
+        `
+        <div class="slide">
+            <img src="${images[index]}" id="zoomed-img">
+            <span class="credit">${credits[index] || ""}</span>
+        </div>
+        `;
+
+    document.body.style.overflow = "hidden";
+
+    currentScale = 1;
+    translateX = 0;
+    translateY = 0;
+    lastTranslateX = 0;
+    lastTranslateY = 0;
+}
+
+function closeViewer() {
+
+    viewer.style.display = "none";
+    document.body.style.overflow = "auto";
+
+}
+
+function changeImage(index){
+
+    currentIndex = index;
+
+    slideContainer.innerHTML =
+        `
+        <div class="slide">
+            <img src="${images[currentIndex]}" id="zoomed-img">
+            <span class="credit">${credits[currentIndex] || ""}</span>
+        </div>
+        `;
+
+    currentScale = 1;
+    translateX = 0;
+    translateY = 0;
+    lastTranslateX = 0;
+    lastTranslateY = 0;
+
+}
+
+slideContainer.addEventListener('touchstart', (e) => {
+
+    if (e.touches.length === 1) {
+        startSwipeX = e.touches[0].clientX;
+    }
+
+    if (e.touches.length === 2) {
+        isZooming = true;
+    }
+
+    if (e.touches.length === 2) {
+
+        startDistance = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+        );
+
+    } else if (e.touches.length === 1) {
+
+        startX = e.touches[0].clientX - lastTranslateX;
+        startY = e.touches[0].clientY - lastTranslateY;
+
+    }
+
+}, { passive: false });
+
+slideContainer.addEventListener('touchmove', (e) => {
+
+    e.preventDefault();
+
+    const img = document.getElementById('zoomed-img');
+
+    if (!img) return;
+
+    if (e.touches.length === 2) {
+
+        const currentDistance = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+        );
+
+        const distanceRatio = currentDistance / startDistance;
+
+        currentScale = Math.max(
+            1,
+            Math.min(currentScale * distanceRatio, 5)
+        );
+
+        startDistance = currentDistance;
+
+    } else if (e.touches.length === 1 && currentScale > 1) {
+
+        translateX = e.touches[0].clientX - startX;
+        translateY = e.touches[0].clientY - startY;
+
+    }
+
+    const maxTx = Math.max(
+        0,
+        (img.offsetWidth * currentScale - window.innerWidth) / 2
+    );
+
+    const maxTy = Math.max(
+        0,
+        (img.offsetHeight * currentScale - window.innerHeight) / 2
+    );
+
+    translateX = Math.max(-maxTx, Math.min(maxTx, translateX));
+    translateY = Math.max(-maxTy, Math.min(maxTy, translateY));
+
+    img.style.transform =
+        `translate(${translateX}px, ${translateY}px) scale(${currentScale})`;
+
+}, { passive: false });
+
+slideContainer.addEventListener('touchend', (event) => {
+
+    lastTranslateX = translateX;
+    lastTranslateY = translateY;
+
+    if (currentScale <= 1) {
+
+        translateX = 0;
+        translateY = 0;
+        lastTranslateX = 0;
+        lastTranslateY = 0;
+
+        const img = document.getElementById('zoomed-img');
+
+        if (img) {
+            img.style.transform =
+                "translate(0px,0px) scale(1)";
+        }
+    }
+
+    if (!isZooming && currentScale === 1) {
+    endSwipeX = event.changedTouches[0].clientX;
+    
+    // 왼쪽으로 스와이프 (다음 사진)
+    if (startSwipeX - endSwipeX > 55) {
+        if (currentTab === 'all') {
+            // 전체 탭일 때
+            if(currentIndex < images.length - 1){
+                changeImage(currentIndex + 1);
+            }
+        } else if (currentTab === 'favorite') {
+            // 즐겨찾기 탭일 때: 즐겨찾기 배열 내에서 현재 위치를 찾음
+            let favIndex = favorites.indexOf(currentIndex);
+            if(favIndex !== -1 && favIndex < favorites.length - 1){
+                // 즐겨찾기 배열의 다음 번호로 이동
+                changeImage(favorites[favIndex + 1]); 
+            }
+        }
+    }
+    // 오른쪽으로 스와이프 (이전 사진)
+    else if (endSwipeX - startSwipeX > 55) {
+        if (currentTab === 'all') {
+            // 전체 탭일 때
+            if(currentIndex > 0){
+                changeImage(currentIndex - 1);
+            }
+        } else if (currentTab === 'favorite') {
+            // 즐겨찾기 탭일 때
+            let favIndex = favorites.indexOf(currentIndex);
+            if(favIndex !== -1 && favIndex > 0){
+                // 즐겨찾기 배열의 이전 번호로 이동
+                changeImage(favorites[favIndex - 1]);
+            }
+        }
+    }
+}
+
+isZooming = false;
+
+});
+
+// ===== 탭 =====
+function showTab(type, btn) {
+
+    currentTab = type;
+
+    if (type === "all") {
+
+        allGallery.style.display = "grid";
+        favoriteGallery.style.display = "none";
+
+    } else {
+
+        allGallery.style.display = "none";
+        favoriteGallery.style.display = "grid";
+
+    }
+
+    const wrap = document.querySelector(".gallery-wrap");
+    wrap.scrollTop = wrap.scrollHeight;
+
+    document.querySelectorAll(".tab-btn").forEach(b => {
+        b.classList.remove("active");
+    });
+
+    btn.classList.add("active");
+
+}
+
+/* 뒤로 버튼 */
+document.getElementById("naverHomeBtn").addEventListener("click", function () {
+    if (window.parent !== window) {
+        try {
+            if (window.frameElement) {
+                window.frameElement.classList.remove("open");
+                return;
+            }
+        } catch (err) { /* 접근할 수 없으면 아래 방식 사용 */ }
+        window.parent.postMessage({ type: "closeApp" }, "*");
+        return;
+    }
+    // 단독으로 열린 경우: index.html로 이동
+    location.href = "../index.html";
+});
+
+/* 날짜 불러오기 */
+document.addEventListener('DOMContentLoaded', () => {
+    const dateElements = document.querySelectorAll('.date-label[data-days-ago]');
+    const today = new Date();
+
+    dateElements.forEach(el => {
+        const daysAgo = parseInt(el.getAttribute('data-days-ago'), 10);
+        const targetDate = new Date(today);
+        targetDate.setDate(today.getDate() - daysAgo);
+
+        const year = targetDate.getFullYear();
+        const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+        const day = String(targetDate.getDate()).padStart(2, '0');
+
+        el.textContent = `${year}.${month}.${day}`;
+    });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>나기 x 기요라</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="../../prevent.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Noto Sans KR', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            height: 100%;
+            background: #fff;
+            color: #111;
+        }
+
+        button {
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: inherit;
+        }
+
+        .page {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 400px;
+            height: 100%;
+            margin: 0 auto;
+            padding-bottom: 40px;
+        }
+
+        .bar {
+            flex: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 52px;
+            padding: 0 16px;
+            border-bottom: 1px solid #eee;
+            font-size: 17px;
+        }
+
+        .bar-title {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .scroll {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+
+        .scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .post {
+            padding: 24px 20px 40px;
+        }
+
+        .post-title {
+            font-size: 22px;
+            font-weight: 700;
+            line-height: 1.4;
+            letter-spacing: -0.4px;
+        }
+
+        .author {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 18px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .author-avatar {
+            width: 36px;
+            height: 36px;
+            overflow: hidden;
+            border-radius: 50%;
+            background: #ddd;
+        }
+
+        .author-avatar img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .author-name {
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .author-date {
+            margin-top: 1px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .body {
+            margin-top: 20px;
+        }
+
+        .body p {
+            margin-bottom: 20px;
+            font-size: 15px;
+            line-height: 1.8;
+            color: #222;
+            word-break: keep-all;
+        }
+
+        .img-box {
+            min-height: 240px;
+            margin: 0 -20px 20px;
+            background: #c2c2c2;
+        }
+
+        .img-box img {
+            display: block;
+            width: 100%;
+        }
+
+        .reactions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding-top: 16px;
+            border-top: 1px solid #eee;
+            font-size: 13px;
+            color: #888;
+        }
+
+        .reactions i {
+            margin-left: 8px;
+            font-size: 17px;
+        }
+
+        .reactions i:first-child {
+            margin-left: 0;
+        }
+
+        /* ===================================================================
+            하단 브라우저 바 (N 로고만 기능, 나머지는 디자인 요소)
+        ===================================================================  */
+        .browser-bar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            max-width: 430px;
+            margin: 0 auto;
+            height: 60px;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            align-items: start;
+            padding: 0 3px;
+            background: #ffffff;
+            border-top: 0.67px solid #d9d9d9;
+            z-index: 15;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .browser-btn {
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2e2e2e;
+        }
+
+        .browser-btn svg {
+            display: block;
+            overflow: visible;
+        }
+
+        .browser-btn.disabled {
+            color: #cccccc;
+        }
+
+        .browser-home {
+            cursor: pointer;
+        }
+
+        /* ===================================================================
+            장르 태그 / 소제목 / 하이라이트 / 안내 문구
+        ===================================================================  */
+        .genre-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 14px;
+        }
+
+        .genre-tags span {
+            padding: 4px 10px;
+            border-radius: 14px;
+            background: #f2f4f6;
+            font-size: 12px;
+            color: #555;
+        }
+
+        .genre-tags span::before {
+            content: '#';
+            margin-right: 1px;
+            color: #03c75a;
+        }
+
+        .body h2 {
+            margin: 32px 0 12px;
+            font-size: 17px;
+            font-weight: 700;
+            line-height: 1.4;
+            letter-spacing: -0.3px;
+            color: #111;
+        }
+
+        .body h2:first-child {
+            margin-top: 0;
+        }
+
+        .highlight {
+            background: linear-gradient(
+                transparent 5%,
+                #007aff42 5%,
+                #007aff42 95%,
+                transparent 95%
+            );
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+
+    <header class="bar">
+        <button onclick="goBack()" aria-label="뒤로가기"><i class="fa-solid fa-chevron-left"></i></button>
+        <span class="bar-title">wwi</span>
+        <i class="fa-solid fa-ellipsis-vertical"></i>
+    </header>
+
+    <div class="scroll">
+        <article class="post">
+            <h1 class="post-title">기본 후회방</h1>
+
+            <div class="genre-tags">
+                <span>러비더비</span>
+                <span>온리 반이입</span>
+                <span>au. 게이샤</span>
+            </div>
+
+            <div class="author">
+                <div class="author-avatar"><img src="../../img/profile.png" alt=""></div>
+                <div>
+                    <div class="author-name">wwi</div>
+                    <div class="author-date">3일 전</div>
+                </div>
+            </div>
+
+            <div class="body">
+                <div class="img-box"><img src="./nagi2.png" alt=""></div>
+
+                <h2>au. 유곽의 게이샤 (현대)</h2>
+                <p>기요라 → 카스미 가명 사용</p>
+
+                <h2>로그 요약1</h2>
+                <p>
+                    幽宴(유연)의 게이샤. 가부키초 중심지의 뒤쪽에 위치했으며 에도시대를 테마로 운영 중이다.
+                    지명 시스템이 있으나 호칭은 '게이샤'로 불린다.
+                </p>
+                <p>
+                    게이샤들의 가치에 걸맞는 값을 일시불로 지불하면 해당 게이샤를 데려갈 수 있다.
+                    하지만 오카상은 돈만 냈다고 아무에게나 게이샤를 내어주지는 않는다. 가장 중요한 건 돈과 그
+                    게이샤의 의사이다.
+                </p>
+
+                <h2>로그 요약2</h2>
+                <p>
+                    첫 시작은 평범했다. 자주 가던 술집에서 늘 2급만 가끔 지명하던 나기의 눈에 보인 카스미의 1급 명패.
+                    여기저기서 이름 좀 날리고 힘 좀 쓴다는 사내들이 그 명패 앞에 모여있는 걸 보며
+                    <span class="highlight">
+                    그는 단순한 호기심으로 그들 바로 뒤에 줄을 서보았다.</span>
+                </p>
+                <p>
+                    맑은 밤하늘에 보름달이 떴던 그날 밤. 카스미는 나기의 지명을 받아들였고 2층 안쪽 고급진
+                    다다미가 깔린 방에서 두 사람은 처음 만났다.
+                    <span class="highlight">
+                        비싼 값에 투덜대던 그는 그날 그녀와 술잔을
+                        기울이고 이야기를 나누었다. 그 후로 한 번, 두 번, 다시 가게를 찾아서 그녀를 지명하게
+                        되었다.
+                    </span>
+                </p>
+
+                <h2>로그 요약3</h2>
+                <p>
+                    시끄러운 가부키초. 번잡한 가게들.
+                    <span class="highlight">
+                    그 속에서 조용히 술잔을 기울이며 샤미센 연주를 듣고
+                    백인일수를 읊고 비밀이 보장되는 그곳에서 남모를 속내를 털어놓는 것.</span>
+                    그의 하나의 즐거움이기도 했다.
+                </p>
+                <p>
+                    몸을 섞지는 않았다. 그런 가게였지만 나기는 그닥 내키지 않았다. 그런 짓 말고도 카스미와 나눌
+                    이야기가 많았고 기울일 술잔도 많았으니까. 하지만 나기는
+                    <span class="highlight">
+                    그녀의 무릎에 머리를 기대서 눕는
+                    것만으로도 심장이 터질 것 같다나 뭐라나.</span>
+                </p>
+
+                <h2>로그 요약4</h2>
+                <p>
+                    이복형 류슈가 카스미에게 말 한 번 걸어올까 매일 낮이 전전긍긍이다. 혹시라도 늦었다가
+                    그날 밤 카스미가 다른 이의 지명을 받아들일까 봐 걸음이 빨라진다.
+                </p>
+                <p>
+                    그녀의 앞에서는 자꾸 찌질해진다. 다른 이와 마주 보고 있는 걸 보면 괜히 불안해져서
+                    옆을 맴돌다가 지명하겠다고 애꿎은 직원만 닥달한다.
+                    <span class="highlight">
+                    방에 들어서면 인사를 건네오는 카스미의 그 작은 품부터 파고들며 시선을 가져온다.</span>
+                    문 밖에서 발소리라도 들리면 그녀의 관심을 모조리 다시
+                    가져오려고 그녀의 손을 다시 제 머리카락으로 이끌고 비싼 술상을 시킨다.
+                    그 음식을 나눠먹고 받아먹다가 직접 젓가락질을 하며 회를 입에 넣어준다.
+                    <span class="highlight">
+                    귀엽다고 말해주며 귀를 건드리는 그녀의 말에 툴툴대면서도 손이
+                    귀에서 떨어져나가면 아쉬운 듯 머리를 흔들어본다.</span>
+                </p>
+                <p>
+                    형을 향한 증오가 그녀에게 자꾸 확인을 받게 만든다. 만약 자신이 형을 죽인다면 어떨까.
+                    <span class="highlight">
+                    만약 그녀가 싫다 한다면 문신으로 뒤덮인 이 피부도, 귀를 둘러싼 이 주렁주렁한 피어싱들도
+                    전부 뜯어버릴 참이다.</span>
+                    자신을 버릴 거냐고, 보고 싶었냐고, 자기 생각을 한 번이라도 해줬냐고
+                    대답을 두려워하며 묻는다. 부드럽게 웃어주는 카스미의 대답을 들으면 그제서야 다시 그 품 속으로
+                    스르르 고개를 숙이며 발만 동동 구른다.
+                </p>
+                <p>
+                    밤이 깊어지면 나기는 늘 카스미를 끌어안고 잠에 든다. 문밖에서 그 어떤 추잡한 소리가 들리더라도
+                    그에게 가장 중요한 건 카스미의 뒤통수를 받치는 베개를 고쳐주고 그 몸을 제 두 팔로 전부
+                    끌어안아서 제 머리를 들이미는 것이다. 카스미가 불편한 듯 살짝 몸을 뒤척이면 어떻게든 편한
+                    자세를 찾아주려고 부산스럽다. 밖에서 유곽의 직원이 조심스레 말이라도 걸어오면 술상이고 뭐고
+                    필요없다며 당장 돌려보내기 바쁘다.
+                </p>
+                <p>
+                    언젠가는 꼭 형이 손 하나 뻗지 못하도록 집으로 데려가야지.
+                    <span class="highlight">
+                    그 누구보다 멋지게 그녀의 앞에서 저와 함께 가달라고 떨리는 손을 내밀어야지.</span>
+                    그런 날이 오면 가장 고급진 옷을 입혀주고 가장 맛있는 것들을 먹여주며
+                    <span class="highlight">
+                    다시 또 제 머리를 쓰다듬어달라고 해야지.</span>
+                    나기의 바램은 늘 그런 것 뿐이다.
+                </p>
+
+            <div class="reactions">
+                <i class="fa-regular fa-heart"></i><span>224</span>
+                <i class="fa-regular fa-comment-dots"></i><span>5</span>
+            </div>
+        </article>
+    </div>
+
+</div>
+
+<!-- 하단 브라우저 바 : N 로고만 index로 이동, 나머지 버튼은 디자인 요소 -->
+<div class="browser-bar">
+    <div id="naverHomeBtn" class="browser-btn browser-home" role="button" aria-label="홈으로">
+        <svg width="23.3" height="23.3" viewBox="0 0 23.3 23.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="1" y="1" width="21.3" height="21.3" rx="4.5"/>
+            <path d="M7.6 15.7V7.7L15.7 15.7V7.7"/>
+        </svg>
+    </div>
+    <div class="browser-btn">
+        <svg width="10.3" height="17.7" viewBox="0 0 10.3 17.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9.3 1L1 8.85L9.3 16.7"/>
+        </svg>
+    </div>
+    <div class="browser-btn disabled">
+        <svg width="10.3" height="17.7" viewBox="0 0 10.3 17.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 1L9.3 8.85L1 16.7"/>
+        </svg>
+    </div>
+    <div class="browser-btn">
+        <svg width="19.6" height="20.5" viewBox="0 0 19.6 20.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9.13" cy="9.3" r="8"/>
+            <path d="M14.8 15.2L18.5 19.4"/>
+        </svg>
+    </div>
+    <div class="browser-btn">
+        <svg width="20" height="19.5" viewBox="0 0 20 19.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18.33 11.93A8.58 8.58 0 1 1 18.4 7.17M18.4 1.67V7.17H13.67"/>
+        </svg>
+    </div>
+    <div class="browser-btn">
+        <svg width="22" height="10" viewBox="0 0 22 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 1H21M1 9H21"/>
+        </svg>
+    </div>
+</div>
+
+<script>
+    function goBack() {
+        if (window.parent !== window) {
+            window.parent.postMessage({ type: 'closeApp' }, '*');
+        } else {
+            history.back();
+        }
+    }
+
+    /* 뒤로 버튼 */
+    document.getElementById("naverHomeBtn").addEventListener("click", function () {
+        // 단독으로 열린 경우: index.html로 이동
+        if (window.parent === window) {
+            location.href = "../../index.html";
+            return;
+        }
+        window.parent.postMessage({ type: "closeAll" }, "*");
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>무도 x 가윤</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="../../prevent.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Noto Sans KR', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            height: 100%;
+            background: #fff;
+            color: #111;
+        }
+
+        button {
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: inherit;
+        }
+
+        .page {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 400px;
+            height: 100%;
+            margin: 0 auto;
+            padding-bottom: 40px;
+        }
+
+        .bar {
+            flex: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 52px;
+            padding: 0 16px;
+            border-bottom: 1px solid #eee;
+            font-size: 17px;
+        }
+
+        .bar-title {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .scroll {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+
+        .scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .post {
+            padding: 24px 20px 40px;
+        }
+
+        .post-title {
+            font-size: 22px;
+            font-weight: 700;
+            line-height: 1.4;
+            letter-spacing: -0.4px;
+        }
+
+        .author {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 18px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .author-avatar {
+            width: 36px;
+            height: 36px;
+            overflow: hidden;
+            border-radius: 50%;
+            background: #ddd;
+        }
+
+        .author-avatar img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .author-name {
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .author-date {
+            margin-top: 1px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .body {
+            margin-top: 20px;
+        }
+
+        .body p {
+            margin-bottom: 20px;
+            font-size: 15px;
+            line-height: 1.8;
+            color: #222;
+            word-break: keep-all;
+        }
+
+        .img-box {
+            min-height: 240px;
+            margin: 0 -20px 20px;
+            background: #c2c2c2;
+        }
+
+        .img-box img {
+            display: block;
+            width: 100%;
+        }
+
+        .reactions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding-top: 16px;
+            border-top: 1px solid #eee;
+            font-size: 13px;
+            color: #888;
+        }
+
+        .reactions i {
+            margin-left: 8px;
+            font-size: 17px;
+        }
+
+        .reactions i:first-child {
+            margin-left: 0;
+        }
+
+        /* ===================================================================
+            하단 브라우저 바 (N 로고만 기능, 나머지는 디자인 요소)
+        ===================================================================  */
+        .browser-bar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            max-width: 430px;
+            margin: 0 auto;
+            height: 60px;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            align-items: start;
+            padding: 0 3px;
+            background: #ffffff;
+            border-top: 0.67px solid #d9d9d9;
+            z-index: 15;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .browser-btn {
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2e2e2e;
+        }
+
+        .browser-btn svg {
+            display: block;
+            overflow: visible;
+        }
+
+        .browser-btn.disabled {
+            color: #cccccc;
+        }
+
+        .browser-home {
+            cursor: pointer;
+        }
+
+        /* ===================================================================
+            장르 태그 / 소제목 / 하이라이트 / 안내 문구
+        ===================================================================  */
+        .genre-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 14px;
+        }
+
+        .genre-tags span {
+            padding: 4px 10px;
+            border-radius: 14px;
+            background: #f2f4f6;
+            font-size: 12px;
+            color: #555;
+        }
+
+        .genre-tags span::before {
+            content: '#';
+            margin-right: 1px;
+            color: #03c75a;
+        }
+
+        .body h2 {
+            margin: 32px 0 12px;
+            font-size: 17px;
+            font-weight: 700;
+            line-height: 1.4;
+            letter-spacing: -0.3px;
+            color: #111;
+        }
+
+        .body h2:first-child {
+            margin-top: 0;
+        }
+
+        .highlight {
+            background: linear-gradient(
+                transparent 5%,
+                #007aff42 5%,
+                #007aff42 95%,
+                transparent 95%
+            );
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+
+    <header class="bar">
+        <button onclick="goBack()" aria-label="뒤로가기"><i class="fa-solid fa-chevron-left"></i></button>
+        <span class="bar-title">wwi</span>
+        <i class="fa-solid fa-ellipsis-vertical"></i>
+    </header>
+
+    <div class="scroll">
+        <article class="post">
+            <h1 class="post-title">기본 설정방</h1>
+
+            <div class="genre-tags">
+                <span>케덕</span>
+                <span>온리 반이입</span>
+                <span>후회물</span>
+            </div>
+
+            <div class="author">
+                <div class="author-avatar"><img src="../../img/profile.png" alt=""></div>
+                <div>
+                    <div class="author-name">wwi</div>
+                    <div class="author-date">2일 전</div>
+                </div>
+            </div>
+
+            <div class="body">
+                <div class="img-box"><img src="./mudo1.png" alt=""></div>
+
+                <h2>기본 설정방</h2>
+                <p>결혼 7년차. 잦은 유산으로 정신 나간 아내 x 아내를 놓아버린 남편</p>
+
+                <h2>로그 요약1</h2>
+                <p>거실은 차가웠고 남은 것은 없었다. 그 속을 채운 건 <span class="highlight">비난조차 없는 침묵</span> 이었고 남편에게 아내가 들이민 건 불륜녀의 목소리와 온기였다. 그 위에 덧붙인 말은 사과나 변명이 아닌 미처 닫지 못한 현관문을 닫으라는 단 한 마디였다.</p>
+
+                <h2>로그 요약2</h2>
+                <p>새벽녘의 빈 도로가 사무치게 시려웠다. <span class="highlight">다가오지 않으면서 다가오지도 못하게 했다.</span> 누군가의 동정 어린 질문 하나가 사탕으로 남겨졌고 그마저도 기억이 괴롭혔다. 그늘 지고 어둑한 언덕 위에서 죽기 전에나 데려오라는 그 한 마디가 기어코 무너뜨렸다.</p>
+                <p><span class="highlight">무너진 이에게 남은 건 흐름을 잃고 역류하는 기억들이었다.</span> 앞뒤의 순서를 가리지 못했고 과거와 그 이전의 과거가 제각각 어디서 비롯되었는지 그 시발점을 구분하지 못했다. 눈앞의 존재를 알아보지 못하면서 기억 속의 존재와 가졌던 기억을 이야기하며 눈을 가렸다. 가려진 눈이 비난을 비난으로 보지 않았고 <span class="highlight">진심 없는 애정을 기억을 위한 양분으로만 대했다.</span></p>
+
+                <h2>로그 요약3</h2>
+                <p>주인이 들여다보지 않은 집 안에서는 좋은 일이 일어나지 못했다. 남편은 그걸 너무 늦게 알았다. 어떤 취급이 이어졌는지, 어떤 조롱이 가득했는지, 새벽녘 도로의 사탕 하나가 건드렸던 기억이 무엇인지 그는 모든 게 지나고서야 알았다. 역류하는 기억 앞에서 남편이 할 수 있는 건 없었다.</p>
+                <p>안주인을 험하게 대했던 개는 맞아죽었다. 무도는 그 순간마저도 불륜녀에게 당분간 가지 못한다는 다정한 문자를 보냈다. <s>아 진짜 이건</s></p>
+
+                <h2>로그 요약4</h2>
+                <p><span class="highlight">후회는 그럴 자격이 있는 자에게만 주어졌다.</span> 무도에게는 그 자격이 없었다. 아내는 더이상 과거의 기억을 이야기하지 않았고 그에게 미래를 내어주지 않았다. 현재의 시선마저 그는 담겨있지 않았다.</p>
+                <p>제아무리 비싼 걸 사다줘도 시선이 머무는 건 잠시였다. 맛있다는 가게에 직접 줄을 서가면서 종류별로 사온 디저트는 단 한 조각조차 다 비워지지 못한 채로 덩그러니 남아버리기 일쑤였다. 함께 팔짱을 끼고 백화점을 구경하던 시절은 더이상 기억도 나지 않았다. 좋은 것들을 모두 쓸어모으고 안절부절하며 뒤늦게 버렸던 애정을 내보여도 받아주는 이가 없었다.</p>
+
+                <h2>로그 요약5</h2>
+                <p>아내는 무슨 생각을 하는지 말해주지 않았다. 어떤 생각을 했었는지는 왜 그런 걸 묻냐는 듯 흘려보내기 일쑤였다. <span class="highlight">과거는 버려졌고 현재는 아껴지기 시작했지만 미래는 없었다.</span> 물론 아껴지는 그녀의 현재에 무도가 건네는 노력은 없었다.</p>
+                <p>아침을 차려도 그녀는 자리에 앉아주지 않는다. 깎아준 과일은 단 맛을 뽐내는 향을 가졌지만 한 조각 베어물지도 않는다. 추운 날에 몸이 상할까 헐레벌떡 다가가서 둘러준 가디건은 거절하지 않는다. 그가 건네준 것이라서가 아니라 제 몸이 상할까 봐서. <span class="highlight">아끼는 현재가 아플까 봐서.</span></p>
+            </div>
+
+            <div class="reactions">
+                <i class="fa-regular fa-heart"></i><span>122</span>
+                <i class="fa-regular fa-comment-dots"></i><span>5</span>
+            </div>
+        </article>
+    </div>
+
+</div>
+
+<!-- 하단 브라우저 바 : N 로고만 index로 이동, 나머지 버튼은 디자인 요소 -->
+<div class="browser-bar">
+    <div id="naverHomeBtn" class="browser-btn browser-home" role="button" aria-label="홈으로">
+        <svg width="23.3" height="23.3" viewBox="0 0 23.3 23.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="1" y="1" width="21.3" height="21.3" rx="4.5"/>
+            <path d="M7.6 15.7V7.7L15.7 15.7V7.7"/>
+        </svg>
+    </div>
+    <div class="browser-btn">
+        <svg width="10.3" height="17.7" viewBox="0 0 10.3 17.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9.3 1L1 8.85L9.3 16.7"/>
+        </svg>
+    </div>
+    <div class="browser-btn disabled">
+        <svg width="10.3" height="17.7" viewBox="0 0 10.3 17.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 1L9.3 8.85L1 16.7"/>
+        </svg>
+    </div>
+    <div class="browser-btn">
+        <svg width="19.6" height="20.5" viewBox="0 0 19.6 20.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9.13" cy="9.3" r="8"/>
+            <path d="M14.8 15.2L18.5 19.4"/>
+        </svg>
+    </div>
+    <div class="browser-btn">
+        <svg width="20" height="19.5" viewBox="0 0 20 19.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18.33 11.93A8.58 8.58 0 1 1 18.4 7.17M18.4 1.67V7.17H13.67"/>
+        </svg>
+    </div>
+    <div class="browser-btn">
+        <svg width="22" height="10" viewBox="0 0 22 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 1H21M1 9H21"/>
+        </svg>
+    </div>
+</div>
+
+<script>
+    function goBack() {
+        if (window.parent !== window) {
+            window.parent.postMessage({ type: 'closeApp' }, '*');
+        } else {
+            history.back();
+        }
+    }
+
+    /* 뒤로 버튼 */
+    document.getElementById("naverHomeBtn").addEventListener("click", function () {
+        // 단독으로 열린 경우: index.html로 이동
+        if (window.parent === window) {
+            location.href = "../../index.html";
+            return;
+        }
+        window.parent.postMessage({ type: "closeAll" }, "*");
+    });
+</script>
+
+</body>
+</html>

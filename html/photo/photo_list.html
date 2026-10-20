@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Diphylleia&family=Gowun+Dodum&family=Poor+Story&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <script src="../../prevent.js"></script>
+
+    <style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background-color: #ffffff;
+        font-family: "Noto Sans KR", sans-serif;
+        color: #222222;
+        overflow: hidden;
+        scrollbar-width: none;
+        -webkit-text-size-adjust: 100%;
+    }
+
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* ===== MYBOX 파일 화면 (index 창 안에 맞춤) ===== */
+    .app {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #ffffff;
+        padding-bottom: 60px;
+    }
+
+    .app, .app * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* 상단 헤더 : 위 40px은 다이나믹 아일랜드 영역, 아래 73px이 제목 줄 */
+    .header {
+        flex: 0 0 auto;
+        padding: 20px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #ffffff;
+    }
+
+    .header-title {
+        font-size: 21px;
+        font-weight: 700;
+        color: #222222;
+        line-height: 1;
+    }
+
+    .header-icons {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        color: #222222;
+        line-height: 1;
+    }
+
+    .icon-sort {
+        display: flex;
+        align-items: center;
+        font-size: 17px;
+    }
+
+    .icon-sort i + i {
+        margin-left: -1.5px;
+    }
+
+    .icon-search {
+        font-size: 20px;
+    }
+
+    .icon-profile {
+        font-size: 24px;
+    }
+
+    .folder-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 68px;
+        padding: 0 16px;
+        cursor: pointer;
+    }
+
+    .folder-row:hover {
+        background: #f8f9fb;
+        cursor: pointer;
+    }
+
+    .folder-icon {
+        flex: 0 0 50px;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .folder-icon .fa-folder {
+        font-size: 36px;
+        color: #7fbcf5;
+        transform: scaleX(1.1);
+    }
+
+    .album-thumb {
+        flex: 0 0 50px;
+        width: 50px;
+        height: 50px;
+        border: 1px solid #e9e9e9;
+        border-radius: 6px;
+        background: #ffffff;
+        overflow: hidden;
+    }
+
+    .album-thumb img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .album-info {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .album-title {
+        font-size: 16px;
+        font-weight: 500;
+        color: #222222;
+        line-height: 1.35;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .album-count {
+        margin-top: 2px;
+        font-size: 13px;
+        color: #868990;
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* 오른쪽 ... 버튼 */
+    .album-more {
+        flex: 0 0 24px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #f5f6fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #868990;
+        font-size: 17px;
+    }
+
+    .album-list {
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    /* ===== 하단 탭바 ===== */
+    .bottom-tabs {
+        flex: 0 0 54px;
+        display: flex;
+        justify-content: space-between;
+        padding-top: 6px;
+        background: #ffffff;
+        border-top: 0.5px solid #e0e0e0;
+    }
+
+    .bottom-tab {
+        flex: 0 1 94px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .bottom-tab-icon {
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #1e1e1e;
+        line-height: 1;
+    }
+
+    .bottom-tab-photo { font-size: 25px; }
+    .bottom-tab-folder { font-size: 22px; }
+
+    .bottom-tab-app {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        background: #4d76f6;
+        color: #ffffff;
+        font-size: 13px;
+    }
+
+    .bottom-tab span.label {
+        margin-top: 4px;
+        font-size: 10px;
+        line-height: 12px;
+        color: #000000;
+    }
+    /* 화면 전환 */
+    #transition {
+        position: fixed;
+        inset: 0;
+        background: #F2F2F7;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .2s;
+        z-index: 99999;
+    }
+
+    #transition.show {
+        opacity: 1;
+    }
+
+    /* ===================================================================
+        하단 브라우저 바 (N 로고만 기능, 나머지는 디자인 요소)
+    ===================================================================  */
+    .browser-bar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        max-width: 430px;
+        margin: 0 auto;
+        height: 60px;
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        align-items: start;
+        padding: 0 3px;
+        background: #ffffff;
+        border-top: 0.67px solid #d9d9d9;
+        z-index: 15;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .browser-btn {
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #2e2e2e;
+    }
+
+    .browser-btn svg {
+        display: block;
+        overflow: visible;
+    }
+
+    .browser-btn.disabled {
+        color: #cccccc;
+    }
+
+    .browser-home {
+        cursor: pointer;
+    }
+    </style>
+</head>
+
+<body>
+
+    <div id="transition"></div>
+
+    <div class="app">
+
+        <!-- 상단 헤더 -->
+        <div class="header">
+            <div class="header-title">MYBOX 파일</div>
+            <div class="header-icons">
+                <span class="icon-sort"><i class="fa-solid fa-arrow-up-long"></i><i class="fa-solid fa-arrow-down-long"></i></span>
+                <i class="fa-solid fa-magnifying-glass icon-search"></i>
+                <i class="fa-regular fa-circle-user icon-profile"></i>
+            </div>
+        </div>
+
+        <!-- 하단 브라우저 바 : N 로고만 index로 이동, 나머지 버튼은 디자인 요소 -->
+        <div class="browser-bar">
+            <div id="naverHomeBtn" class="browser-btn browser-home" role="button" aria-label="홈으로">
+                <svg width="23.3" height="23.3" viewBox="0 0 23.3 23.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="1" y="1" width="21.3" height="21.3" rx="4.5"/>
+                    <path d="M7.6 15.7V7.7L15.7 15.7V7.7"/>
+                </svg>
+            </div>
+            <div class="browser-btn">
+                <svg width="10.3" height="17.7" viewBox="0 0 10.3 17.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9.3 1L1 8.85L9.3 16.7"/>
+                </svg>
+            </div>
+            <div class="browser-btn disabled">
+                <svg width="10.3" height="17.7" viewBox="0 0 10.3 17.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 1L9.3 8.85L1 16.7"/>
+                </svg>
+            </div>
+            <div class="browser-btn">
+                <svg width="19.6" height="20.5" viewBox="0 0 19.6 20.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="9.13" cy="9.3" r="8"/>
+                    <path d="M14.8 15.2L18.5 19.4"/>
+                </svg>
+            </div>
+            <div class="browser-btn">
+                <svg width="20" height="19.5" viewBox="0 0 20 19.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18.33 11.93A8.58 8.58 0 1 1 18.4 7.17M18.4 1.67V7.17H13.67"/>
+                </svg>
+            </div>
+            <div class="browser-btn">
+                <svg width="22" height="10" viewBox="0 0 22 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 1H21M1 9H21"/>
+                </svg>
+            </div>
+        </div>
+
+        <div class="album-list">
+
+            <!-- 폴더 -->
+            <div class="folder-row" onclick="location.href='./photo_pair.html'">
+                <div class="folder-icon"><i class="fa-solid fa-folder"></i></div>
+                <div class="album-info">
+                    <div class="album-title">
+                        <i class="fa-solid fa-thumbtack"></i>
+                        페어
+                    </div>
+                    <div class="album-count" data-days-ago="8"></div>
+                </div>
+                <div class="album-more"><i class="fa-solid fa-ellipsis"></i></div>
+            </div>
+
+            <div class="folder-row" onclick="location.href='./photo_mudo.html'">
+                <div class="folder-icon"><i class="fa-solid fa-folder"></i></div>
+                <div class="album-info">
+                    <div class="album-title">무도 x 가윤</div>
+                    <div class="album-count" data-days-ago="1"></div>
+                </div>
+                <div class="album-more"><i class="fa-solid fa-ellipsis"></i></div>
+            </div>
+
+            <div class="folder-row" onclick="location.href='./photo_nagi.html'">
+                <div class="folder-icon"><i class="fa-solid fa-folder"></i></div>
+                <div class="album-info">
+                    <div class="album-title">나기 x 기요라</div>
+                    <div class="album-count" data-days-ago="1"></div>
+                </div>
+                <div class="album-more"><i class="fa-solid fa-ellipsis"></i></div>
+            </div>
+
+            <div class="folder-row" onclick="location.href='./photo_hazel.html'">
+                <div class="folder-icon"><i class="fa-solid fa-folder"></i></div>
+                <div class="album-info">
+                    <div class="album-title">헤이즐</div>
+                    <div class="album-count" data-days-ago="4"></div>
+                </div>
+                <div class="album-more"><i class="fa-solid fa-ellipsis"></i></div>
+            </div>
+
+            <div class="folder-row" onclick="location.href='./photo_mouse.html'">
+                <div class="folder-icon"><i class="fa-solid fa-folder"></i></div>
+                <div class="album-info">
+                    <div class="album-title">쥐선우</div>
+                    <div class="album-count" data-days-ago="5"></div>
+                </div>
+                <div class="album-more"><i class="fa-solid fa-ellipsis"></i></div>
+            </div>
+
+            <div class="folder-row" onclick="location.href='./photo_sanga.html'">
+                <div class="folder-icon"><i class="fa-solid fa-folder"></i></div>
+                <div class="album-info">
+                    <div class="album-title">추상아</div>
+                    <div class="album-count" data-days-ago="6"></div>
+                </div>
+                <div class="album-more"><i class="fa-solid fa-ellipsis"></i></div>
+            </div>
+
+            <div class="folder-row" onclick="location.href='./photo_sunwo.html'">
+                <div class="folder-icon"><i class="fa-solid fa-folder"></i></div>
+                <div class="album-info">
+                    <div class="album-title">기선우</div>
+                    <div class="album-count" data-days-ago="7"></div>
+                </div>
+                <div class="album-more"><i class="fa-solid fa-ellipsis"></i></div>
+            </div>
+        </div>
+
+        <!-- 하단 탭바 -->
+        <nav class="bottom-tabs">
+            <div class="bottom-tab">
+                <div class="bottom-tab-icon bottom-tab-photo"><i class="fa-regular fa-image"></i></div>
+                <span class="label">사진</span>
+            </div>
+            <div class="bottom-tab">
+                <div class="bottom-tab-icon bottom-tab-folder"><i class="fa-solid fa-folder"></i></div>
+                <span class="label">파일</span>
+            </div>
+            <div class="bottom-tab">
+                <div class="bottom-tab-icon bottom-tab-app"><i class="fa-solid fa-cube"></i></div>
+                <span class="label">앱 열기</span>
+            </div>
+        </nav>
+
+    </div>
+
+    <div id="transition"></div>
+    </body>
+
+    <script>
+        /* 뒤로 버튼 */
+        document.getElementById("naverHomeBtn").addEventListener("click", function () {
+            if (window.parent !== window) {
+                try {
+                    if (window.frameElement) {
+                        window.frameElement.classList.remove("open");
+                        return;
+                    }
+                } catch (err) { /* 접근할 수 없으면 아래 방식 사용 */ }
+                window.parent.postMessage({ type: "closeApp" }, "*");
+                return;
+            }
+            // 단독으로 열린 경우: index.html로 이동
+            location.href = "../index.html";
+        });
+
+        /* 날짜 불러오기 */
+        document.addEventListener('DOMContentLoaded', () => {
+            const dateElements = document.querySelectorAll('.album-count[data-days-ago]');
+            const today = new Date();
+
+            dateElements.forEach(el => {
+                const daysAgo = parseInt(el.getAttribute('data-days-ago'), 10);
+                const targetDate = new Date(today);
+                targetDate.setDate(today.getDate() - daysAgo);
+
+                const year = targetDate.getFullYear();
+                const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+                const day = String(targetDate.getDate()).padStart(2, '0');
+
+                el.textContent = `${year}.${month}.${day}`;
+            });
+        });
+    </script>
+</html>

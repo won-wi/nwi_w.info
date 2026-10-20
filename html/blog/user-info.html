@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>기선우</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="../../prevent.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Noto Sans KR', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            height: 100%;
+            background: #fff;
+            color: #111;
+        }
+
+        button {
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: inherit;
+        }
+
+        .page {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 400px;
+            height: 100%;
+            margin: 0 auto;
+            padding-bottom: 40px;
+        }
+
+        .bar {
+            flex: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 52px;
+            padding: 0 16px;
+            border-bottom: 1px solid #eee;
+            font-size: 17px;
+        }
+
+        .bar-title {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .scroll {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+
+        .scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .post {
+            padding: 24px 20px 40px;
+        }
+
+        .post-title {
+            font-size: 22px;
+            font-weight: 700;
+            line-height: 1.4;
+            letter-spacing: -0.4px;
+        }
+
+        .author {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 18px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .author-avatar {
+            width: 36px;
+            height: 36px;
+            overflow: hidden;
+            border-radius: 50%;
+            background: #ddd;
+        }
+
+        .author-avatar img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .author-name {
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .author-date {
+            margin-top: 1px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .body {
+            margin-top: 20px;
+        }
+
+        .body p {
+            margin-bottom: 20px;
+            font-size: 15px;
+            line-height: 1.8;
+            color: #222;
+            word-break: keep-all;
+        }
+
+        .img-box {
+            min-height: 240px;
+            margin: 0 -20px 20px;
+            background: #ffffff;
+        }
+
+        .img-box img {
+            display: block;
+            width: 100%;
+        }
+
+        .img-box span {
+            font-size: 14px;
+            color: #000000;
+            padding-left: 10px;
+            padding-top: 5px;
+        }
+
+        .reactions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding-top: 16px;
+            border-top: 1px solid #eee;
+            font-size: 13px;
+            color: #888;
+        }
+
+        .reactions i {
+            margin-left: 8px;
+            font-size: 17px;
+        }
+
+        .reactions i:first-child {
+            margin-left: 0;
+        }
+
+        /* ===================================================================
+            하단 브라우저 바 (N 로고만 기능, 나머지는 디자인 요소)
+        ===================================================================  */
+        .browser-bar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            max-width: 430px;
+            margin: 0 auto;
+            height: 60px;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            align-items: start;
+            padding: 0 3px;
+            background: #ffffff;
+            border-top: 0.67px solid #d9d9d9;
+            z-index: 15;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .browser-btn {
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2e2e2e;
+        }
+
+        .browser-btn svg {
+            display: block;
+            overflow: visible;
+        }
+
+        .browser-btn.disabled {
+            color: #cccccc;
+        }
+
+        .browser-home {
+            cursor: pointer;
+        }
+
+        /* ===================================================================
+            장르 태그 / 소제목 / 하이라이트 / 안내 문구
+        ===================================================================  */
+        .genre-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 14px;
+        }
+
+        .genre-tags span {
+            padding: 4px 10px;
+            border-radius: 14px;
+            background: #f2f4f6;
+            font-size: 12px;
+            color: #555;
+        }
+
+        .genre-tags span::before {
+            content: '#';
+            margin-right: 1px;
+            color: #03c75a;
+        }
+
+        .body h2 {
+            margin: 32px 0 12px;
+            font-size: 17px;
+            font-weight: 700;
+            line-height: 1.4;
+            letter-spacing: -0.3px;
+            color: #111;
+        }
+
+        .body h2:first-child {
+            margin-top: 0;
+        }
+
+        .highlight {
+            background: linear-gradient(
+                transparent 5%,
+                #007aff42 5%,
+                #007aff42 95%,
+                transparent 95%
+            );
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+
+    <header class="bar">
+        <button onclick="goBack()" aria-label="뒤로가기"><i class="fa-solid fa-chevron-left"></i></button>
+        <span class="bar-title">wwi</span>
+        <i class="fa-solid fa-ellipsis-vertical"></i>
+    </header>
+
+    <div class="scroll">
+        <article class="post">
+            <h1 class="post-title">계정주 정보</h1>
+
+            <div class="genre-tags">
+                <span>oruu-p</span>
+            </div>
+
+            <div class="author">
+                <div class="author-avatar"><img src="../../img/profile.png" alt=""></div>
+                <div>
+                    <div class="author-name">wwi</div>
+                    <div class="author-date">오늘</div>
+                </div>
+            </div>
+
+            <div class="body">
+
+                <h2>기본 정보</h2>
+                <p>성인 여성</p>
+                <p>블언블 선호. 블락 상관 X</p>
+                <p>ai 짤뽑 사용함</p>
+                <p>온리 배려는 직멘x로만 가능<br>기존 트친 외에 프리즘, 피어리스 더 안 받음</p>
+
+                <h2>성향</h2>
+                <p>HL 위주, 근친 O, 고어 가끔<br>수위와 고어는 상시플텍계 사용함</p>
+                <p>지뢰 별로 없어서 혼자 스루함. 민감 X</p>
+                <p><span class="highlight">나기, 김무도 온리라서 겹드 안 봐요.</span> 지뢰는 아니지만 탐라, 직멘은 스루함</p>
+
+            <div class="reactions">
+                <i class="fa-regular fa-heart"></i><span>99</span>
+                <i class="fa-regular fa-comment-dots"></i><span>9</span>
+            </div>
+        </article>
+    </div>
+
+</div>
+
+<!-- 하단 브라우저 바 : N 로고만 index로 이동, 나머지 버튼은 디자인 요소 -->
+<div class="browser-bar">
+    <div id="naverHomeBtn" class="browser-btn browser-home" role="button" aria-label="홈으로">
+        <svg width="23.3" height="23.3" viewBox="0 0 23.3 23.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="1" y="1" width="21.3" height="21.3" rx="4.5"/>
+            <path d="M7.6 15.7V7.7L15.7 15.7V7.7"/>
+        </svg>
+    </div>
+    <div class="browser-btn">
+        <svg width="10.3" height="17.7" viewBox="0 0 10.3 17.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9.3 1L1 8.85L9.3 16.7"/>
+        </svg>
+    </div>
+    <div class="browser-btn disabled">
+        <svg width="10.3" height="17.7" viewBox="0 0 10.3 17.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 1L9.3 8.85L1 16.7"/>
+        </svg>
+    </div>
+    <div class="browser-btn">
+        <svg width="19.6" height="20.5" viewBox="0 0 19.6 20.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9.13" cy="9.3" r="8"/>
+            <path d="M14.8 15.2L18.5 19.4"/>
+        </svg>
+    </div>
+    <div class="browser-btn">
+        <svg width="20" height="19.5" viewBox="0 0 20 19.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18.33 11.93A8.58 8.58 0 1 1 18.4 7.17M18.4 1.67V7.17H13.67"/>
+        </svg>
+    </div>
+    <div class="browser-btn">
+        <svg width="22" height="10" viewBox="0 0 22 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 1H21M1 9H21"/>
+        </svg>
+    </div>
+</div>
+
+<script>
+    function goBack() {
+        if (window.parent !== window) {
+            window.parent.postMessage({ type: 'closeApp' }, '*');
+        } else {
+            history.back();
+        }
+    }
+
+    /* 뒤로 버튼 */
+    document.getElementById("naverHomeBtn").addEventListener("click", function () {
+        // 단독으로 열린 경우: index.html로 이동
+        if (window.parent === window) {
+            location.href = "../../index.html";
+            return;
+        }
+        window.parent.postMessage({ type: "closeAll" }, "*");
+    });
+</script>
+
+</body>
+</html>
