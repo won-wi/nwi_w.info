@@ -1265,7 +1265,7 @@
                     <span>쇼핑</span>
                 </a>
                 <a href="#" class="nav-item active" onclick="clearCacheAndReload(event)">
-                    <i class="fa-solid fa-house" onclick="location.reload();"></i>
+                    <i class="fa-solid fa-house"></i>
                     <span>홈</span>
                 </a>
                 <a href="#" class="nav-item">
@@ -2010,17 +2010,70 @@
     function clearCacheAndReload(e) {
         if (e) e.preventDefault();
 
-        // 캐시 삭제
-        if ('caches' in window) {
-            caches.keys().then(function(names) {
-                names.forEach(function(name) {
-                    caches.delete(name);
-                });
-            });
+        // 연타 방지
+        if (clearCacheAndReload.running) return;
+        clearCacheAndReload.running = true;
+
+        // 새로고침 (현재 창을 그대로 새로고침)
+        function reloadNow() {
+            if (reloadNow.done) return;
+            reloadNow.done = true;
+            window.location.reload();
         }
 
-        // 삭제 후 새로고침
-        location.href = location.pathname + '?t=' + Date.now();
+        // 이 사이트(같은 주소)의 파일만 서버에서 강제로 새로 받아서
+        // 브라우저에 저장된 옛날 캐시를 새 파일로 덮어씀 (다른 사이트/탭에는 영향 없음)
+        function refreshSiteFiles() {
+            var base = location.href.split('#')[0];
+            var urls = {};
+
+            function add(u) {
+                try {
+                    var abs = new URL(u, base);
+                    if (abs.origin === location.origin) urls[abs.href.split('#')[0]] = true;
+                } catch (err) {}
+            }
+
+            // 현재 화면에서 쓰는 같은 사이트 파일
+            document.querySelectorAll('script[src], link[href], img[src], source[src], audio[src], video[src]').forEach(function(el) {
+                add(el.getAttribute('src') || el.getAttribute('href'));
+            });
+
+            // 새로 받은 HTML 안에 적힌 파일 경로 (CSS url(), JS 안의 이미지 경로 등)
+            return fetch(base, { cache: 'reload' })
+                .then(function(res) { return res.text(); })
+                .catch(function() { return ''; })
+                .then(function(html) {
+                    var re = /["'(]\s*([^"'()\s<>]+?\.(?:png|jpe?g|gif|webp|svg|ico|js|css|json|mp3|mp4|woff2?|ttf))(?:\?[^"'()\s]*)?\s*["')]/gi;
+                    var m;
+                    while ((m = re.exec(html))) add(m[1]);
+
+                    return Promise.all(Object.keys(urls).map(function(u) {
+                        return fetch(u, { cache: 'reload' })
+                            .then(function(res) { return res.arrayBuffer(); })
+                            .catch(function() {});
+                    }));
+                });
+        }
+
+        var tasks = [refreshSiteFiles().catch(function() {})];
+
+        // 캐시 저장소(Cache Storage) 삭제
+        if ('caches' in window) {
+            tasks.push(
+                caches.keys().then(function(names) {
+                    return Promise.all(names.map(function(name) {
+                        return caches.delete(name);
+                    }));
+                }).catch(function() {})
+            );
+        }
+
+        // 모두 끝나면 새로고침
+        Promise.all(tasks).then(reloadNow, reloadNow);
+
+        // 혹시 지연되더라도 8초 뒤에는 반드시 새로고침
+        setTimeout(reloadNow, 8000);
     }
     </script>
 
@@ -2046,7 +2099,10 @@
 
                 fetch(SOUND_SRC)
                     .then(res => res.arrayBuffer())
-                    .then(data => new Promise((resolve, reject) => audioCtx.decodeAudioData(data, resolve, reject)))
+                    .then(data => new Promise((resolve, reject) => {
+                        const decoding = audioCtx.decodeAudioData(data, resolve, reject);
+                        if (decoding && decoding.catch) decoding.catch(() => {});
+                    }))
                     .then(buffer => { soundBuffer = buffer; })
                     .catch(() => {});
             }
