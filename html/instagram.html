@@ -1867,21 +1867,36 @@ updateProfileAvatar();
 showHome();
 
 
-/* 모든 인스타그램 이미지 로딩 완료 후 로딩 화면 제거 */
+/* stories 이미지만 먼저 로딩 완료 후 로딩 화면 제거 (나머지 이미지는 이후 백그라운드 로딩) */
 (async function () {
     const loadingScreen = document.getElementById("instagramLoading");
-    const imageUrls = new Set();
+    const storyImageUrls = new Set();
+    const otherImageUrls = new Set();
 
-    // 현재 화면에 생성된 이미지
-    document.querySelectorAll("img").forEach(img => {
-        if (img.src) imageUrls.add(img.src);
+    const imageExt = /\.(png|jpe?g|webp|gif|svg)(?:[?#].*)?$/i;
+    const toUrl = value => new URL(value, document.baseURI).href;
+
+    // stories 배열에 사용된 이미지 (우선 로딩 대상)
+    accounts.forEach(account => {
+        (account.stories || []).forEach(story => {
+            const src = typeof story === "string" ? story : story && story.image;
+            if (typeof src === "string" && imageExt.test(src)) {
+                storyImageUrls.add(toUrl(src));
+            }
+        });
     });
 
-    // accounts 데이터에 등록된 이미지
+    // 현재 화면에 생성된 이미지 (stories 이미지가 아닌 것)
+    document.querySelectorAll("img").forEach(img => {
+        if (img.src && !storyImageUrls.has(img.src)) otherImageUrls.add(img.src);
+    });
+
+    // accounts 데이터에 등록된 나머지 이미지
     function collectImages(value) {
         if (typeof value === "string") {
-            if (/\.(png|jpe?g|webp|gif|svg)(?:[?#].*)?$/i.test(value)) {
-                imageUrls.add(new URL(value, document.baseURI).href);
+            if (imageExt.test(value)) {
+                const url = toUrl(value);
+                if (!storyImageUrls.has(url)) otherImageUrls.add(url);
             }
         } else if (Array.isArray(value)) {
             value.forEach(collectImages);
@@ -1906,9 +1921,13 @@ showHome();
         });
     }
 
-    await Promise.all([...imageUrls].map(loadImage));
+    // stories 이미지만 기다린 후 로딩 화면 제거
+    await Promise.all([...storyImageUrls].map(loadImage));
 
     loadingScreen.classList.add("hidden");
+
+    // 나머지 이미지는 로딩 화면이 사라진 뒤 백그라운드에서 로딩
+    otherImageUrls.forEach(loadImage);
 })();
 
 /* 뒤로 버튼 */
